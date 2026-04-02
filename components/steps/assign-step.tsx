@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { 
-  ArrowLeft, 
-  ArrowRight, 
+import {
+  ArrowLeft,
+  ArrowRight,
   Split,
   Check,
   Users,
@@ -44,8 +44,8 @@ export function AssignStep() {
   if (!currentReceipt) return null
 
   const handleBuyerToggle = (buyerId: string) => {
-    setSelectedBuyers(prev => 
-      prev.includes(buyerId) 
+    setSelectedBuyers(prev =>
+      prev.includes(buyerId)
         ? prev.filter(id => id !== buyerId)
         : [...prev, buyerId]
     )
@@ -63,14 +63,14 @@ export function AssignStep() {
     setQuantities(prev => {
       const current = prev[buyerId] || 0
       const newQty = Math.max(0, current + delta)
-      
+
       // Add/remove from selectedBuyers based on quantity
       if (newQty > 0 && !selectedBuyers.includes(buyerId)) {
         setSelectedBuyers(s => [...s, buyerId])
       } else if (newQty === 0 && selectedBuyers.includes(buyerId)) {
         setSelectedBuyers(s => s.filter(id => id !== buyerId))
       }
-      
+
       return { ...prev, [buyerId]: newQty }
     })
   }
@@ -81,7 +81,7 @@ export function AssignStep() {
 
   const handleAssign = () => {
     if (!selectedItem || selectedBuyers.length === 0) return
-    
+
     if (splitMode === 'custom') {
       const amounts: Record<string, number> = {}
       selectedBuyers.forEach(id => {
@@ -93,13 +93,13 @@ export function AssignStep() {
     } else {
       assignItem(selectedItem, selectedBuyers, splitMode)
     }
-    
+
     // Move to next unassigned item
     const currentIndex = currentReceipt.items.findIndex(i => i.id === selectedItem)
-    const nextUnassigned = currentReceipt.items.find((item, idx) => 
+    const nextUnassigned = currentReceipt.items.find((item, idx) =>
       idx > currentIndex && item.assignments.length === 0
     )
-    
+
     if (nextUnassigned) {
       setSelectedItem(nextUnassigned.id)
     } else {
@@ -116,19 +116,19 @@ export function AssignStep() {
 
   const getAssignmentBadges = (item: ReceiptItem) => {
     if (item.assignments.length === 0) return null
-    
+
     // If only one person and full assignment, don't show badges (color is enough)
     if (item.assignments.length === 1 && item.assignments[0].splitType === 'full') {
       return null
     }
-    
+
     return (
       <div className="flex flex-wrap gap-1 mt-1">
         {item.assignments.map(assignment => {
           const buyer = buyers.find(b => b.id === assignment.buyerId)
           if (!buyer) return null
           return (
-            <Badge 
+            <Badge
               key={assignment.buyerId}
               variant="secondary"
               className="text-xs"
@@ -145,12 +145,12 @@ export function AssignStep() {
   // Get the background color for an item based on assignments
   const getItemBackgroundStyle = (item: ReceiptItem) => {
     if (item.assignments.length === 0) return {}
-    
+
     if (item.assignments.length === 1) {
       // Single person - use their color
       const buyer = buyers.find(b => b.id === item.assignments[0].buyerId)
       if (buyer) {
-        return { 
+        return {
           backgroundColor: `${buyer.color}15`,
           borderColor: `${buyer.color}40`
         }
@@ -160,19 +160,19 @@ export function AssignStep() {
       const colors = item.assignments
         .map(a => buyers.find(b => b.id === a.buyerId)?.color)
         .filter(Boolean)
-      
+
       if (colors.length >= 2) {
-        const gradientStops = colors.map((c, i) => 
+        const gradientStops = colors.map((c, i) =>
           `${c}20 ${(i / (colors.length - 1)) * 100}%`
         ).join(', ')
-        
+
         return {
           background: `linear-gradient(135deg, ${gradientStops})`,
           borderColor: `${colors[0]}40`
         }
       }
     }
-    
+
     return {}
   }
 
@@ -221,8 +221,8 @@ export function AssignStep() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full"
               onClick={handleEqualSplitAll}
             >
@@ -257,7 +257,7 @@ export function AssignStep() {
                       {formatCurrency(item.price)}
                     </span>
                   </div>
-                  
+
                   {/* Quick Assign Buttons */}
                   <div className="flex flex-wrap gap-1 mt-2">
                     {buyers.map(buyer => (
@@ -268,8 +268,8 @@ export function AssignStep() {
                           handleQuickAssign(item.id, buyer.id)
                         }}
                         className="px-2 py-1 text-xs rounded-md transition-colors hover:opacity-80"
-                        style={{ 
-                          backgroundColor: `${buyer.color}20`, 
+                        style={{
+                          backgroundColor: `${buyer.color}20`,
                           color: buyer.color,
                           border: `1px solid ${buyer.color}40`
                         }}
@@ -301,15 +301,15 @@ export function AssignStep() {
                   {selectedItemData ? selectedItemData.name : 'Selecciona un item'}
                 </CardTitle>
                 <CardDescription>
-                  {selectedItemData 
+                  {selectedItemData
                     ? formatCurrency(selectedItemData.price)
                     : 'Haz clic en un item de la lista'
                   }
                 </CardDescription>
               </div>
               {selectedItem && (
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
                   onClick={() => setSelectedItem(null)}
                 >
@@ -334,8 +334,8 @@ export function AssignStep() {
                       }}
                       className={cn(
                         "p-3 rounded-lg border-2 transition-all text-left",
-                        splitMode === mode.value 
-                          ? "border-primary bg-primary/5" 
+                        splitMode === mode.value
+                          ? "border-primary bg-primary/5"
                           : "border-muted hover:border-primary/30"
                       )}
                     >
@@ -359,7 +359,7 @@ export function AssignStep() {
                     {buyers.map(buyer => {
                       const isSelected = selectedBuyers.includes(buyer.id)
                       const qty = quantities[buyer.id] || 0
-                      
+
                       return (
                         <div
                           key={buyer.id}
@@ -377,7 +377,7 @@ export function AssignStep() {
                               (splitMode === 'quantity' || splitMode === 'custom') && "pointer-events-none"
                             )}
                           >
-                            <div 
+                            <div
                               className="w-8 h-8 rounded-full flex items-center justify-center text-white font-medium text-sm"
                               style={{ backgroundColor: buyer.color }}
                             >
@@ -483,8 +483,8 @@ export function AssignStep() {
                         <span className="text-muted-foreground">Total asignado:</span>
                         <span className={cn(
                           "font-mono",
-                          Math.abs(Object.values(customAmounts).reduce((s, v) => s + (parseFloat(v) || 0), 0) - selectedItemData.price) > 0.01 
-                            ? "text-destructive" 
+                          Math.abs(Object.values(customAmounts).reduce((s, v) => s + (parseFloat(v) || 0), 0) - selectedItemData.price) > 0.01
+                            ? "text-destructive"
                             : "text-primary"
                         )}>
                           {formatCurrency(Object.values(customAmounts).reduce((s, v) => s + (parseFloat(v) || 0), 0))} / {formatCurrency(selectedItemData.price)}
@@ -494,8 +494,8 @@ export function AssignStep() {
                   )}
                 </div>
 
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   size="lg"
                   onClick={handleAssign}
                   disabled={selectedBuyers.length === 0}

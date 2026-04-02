@@ -83,22 +83,23 @@ export function BuyersStep() {
                 {buyers.map((buyer) => (
                   <div
                     key={buyer.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border bg-card"
+                    className="flex items-center flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg border bg-card"
                   >
-                    <div className="flex gap-1">
+                    <div className="flex flex-wrap gap-1">
                       {BUYER_COLORS.map((color) => (
                         <button
                           key={color}
                           onClick={() => handleColorChange(buyer.id, color)}
-                          className={`w-6 h-6 rounded-full transition-transform ${
-                            buyer.color === color ? 'ring-2 ring-offset-2 ring-primary scale-110' : 'hover:scale-105'
-                          }`}
+                          className={`w-6 h-6 rounded-full transition-transform ${buyer.color === color
+                            ? 'ring-2 ring-offset-2 ring-primary scale-110'
+                            : 'hover:scale-105'
+                            }`}
                           style={{ backgroundColor: color }}
                         />
                       ))}
                     </div>
-                    
-                    <div className="flex-1 min-w-0">
+
+                    <div className="flex-1 min-w-1">
                       {editingId === buyer.id ? (
                         <Input
                           value={editingName}

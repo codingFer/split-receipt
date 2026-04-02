@@ -8,14 +8,14 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { FieldGroup, Field, FieldLabel } from '@/components/ui/field'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Plus, 
-  Trash2, 
-  Edit2, 
-  Check, 
-  X, 
-  ArrowLeft, 
-  ArrowRight, 
+import {
+  Plus,
+  Trash2,
+  Edit2,
+  Check,
+  X,
+  ArrowLeft,
+  ArrowRight,
   FileText,
   AlertTriangle
 } from 'lucide-react'
@@ -126,7 +126,7 @@ export function ReviewStep() {
             <p className="text-sm font-medium text-muted-foreground">
               Items ({currentReceipt.items.length})
             </p>
-            
+
             {currentReceipt.items.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 No items yet. Add items manually below.
@@ -136,16 +136,16 @@ export function ReviewStep() {
                 {currentReceipt.items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border bg-card"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-lg border border-4 bg-card"
                   >
                     {editingId === item.id ? (
                       <>
-                        <div className="flex-1 grid grid-cols-3 gap-2">
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
                           <Input
                             value={editForm.name}
                             onChange={(e) => setEditForm(f => ({ ...f, name: e.target.value }))}
                             placeholder="Name"
-                            className="col-span-2"
+                            className="col-span-1 sm:col-span-2 w-full"
                           />
                           <div className="flex gap-2">
                             <Input
@@ -153,7 +153,7 @@ export function ReviewStep() {
                               onChange={(e) => setEditForm(f => ({ ...f, quantity: e.target.value }))}
                               placeholder="Qty"
                               type="number"
-                              className="w-16"
+                              className="w-16 sm:w-20"
                             />
                             <Input
                               value={editForm.price}
@@ -161,20 +161,23 @@ export function ReviewStep() {
                               placeholder="Price"
                               type="number"
                               step="0.01"
+                              className="w-20 sm:w-24"
                             />
                           </div>
                         </div>
-                        <Button size="icon" variant="ghost" onClick={handleEditSave}>
-                          <Check className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost" onClick={() => setEditingId(null)}>
-                          <X className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-2 mt-2 sm:mt-0">
+                          <Button size="icon" variant="ghost" onClick={handleEditSave}>
+                            <Check className="h-4 w-4" />
+                          </Button>
+                          <Button size="icon" variant="ghost" onClick={() => setEditingId(null)}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </>
                     ) : (
                       <>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                             <span className="text-lg">{getProductEmoji(item.name)}</span>
                             <span className="font-medium truncate">{item.name}</span>
                             {item.confidence < 1 && getConfidenceBadge(item.confidence)}
@@ -185,15 +188,20 @@ export function ReviewStep() {
                             </span>
                           )}
                         </div>
-                        <span className="font-mono font-medium">
-                          {formatCurrency(item.price)}
-                        </span>
-                        <Button size="icon" variant="ghost" onClick={() => handleEditStart(item)}>
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost" onClick={() => removeItem(item.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+
+                        <div className="flex justify-between items-center gap-2 mt-2 sm:mt-0">
+                          <span className="font-mono font-medium mt-1 sm:mt-0">
+                            {formatCurrency(item.price)}
+                          </span>
+                          <div>
+                            <Button size="icon" variant="ghost" onClick={() => handleEditStart(item)}>
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button size="icon" variant="ghost" onClick={() => removeItem(item.id)}>
+                              <Trash2 className="h-4 w-4 text-red-500" />
+                            </Button>
+                          </div>
+                        </div>
                       </>
                     )}
                   </div>
@@ -246,9 +254,9 @@ export function ReviewStep() {
             <CardTitle className="text-sm">Original Receipt</CardTitle>
           </CardHeader>
           <CardContent>
-            <img 
-              src={currentReceipt.imageUrl} 
-              alt="Receipt" 
+            <img
+              src={currentReceipt.imageUrl}
+              alt="Receipt"
               className="max-h-64 mx-auto rounded-lg"
             />
           </CardContent>
