@@ -1,0 +1,249 @@
+import type { Receipt, ReceiptItem } from './types'
+
+function generateId() {
+  return Math.random().toString(36).substring(2, 9)
+}
+
+interface ParsedLine {
+  text: string
+  confidence: number
+}
+
+export async function processReceiptImage(imageFile: File): Promise<Receipt> {
+  const { createWorker } = await import('tesseract.js')
+  const worker = await createWorker('spa')
+  
+  try {
+    const imageUrl = await fileToDataUrl(imageFile)
+    const { data } = await worker.recognize(imageUrl)
+    
+    const lines: ParsedLine[] = data.lines.map(line => ({
+      text: line.text.trim(),
+      confidence: line.confidence / 100
+    }))
+    
+    const receipt = parseBolivianReceipt(lines, imageUrl)
+    
+    return receipt
+  } finally {
+    await worker.terminate()
+  }
+}
+
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+// Clean item name - remove numeric garbage and extra spaces
+function cleanItemName(name: string): string {
+  return name
+    // Remove standalone numbers/decimals (like "00000", "7.70000", etc.)
+    .replace(/\b\d+[\.,]?\d*\b/g, '')
+    // Remove X that was part of quantity expression
+    .replace(/\s*[xX]\s*/g, ' ')
+    // Remove multiple spaces
+    .replace(/\s+/g, ' ')
+    // Remove leading/trailing garbage
+    .replace(/^[\s\.,\-:]+|[\s\.,\-:]+$/g, '')
+    .trim()
+}
+
+// Check if a line is just numbers (quantity line)
+function isQuantityLine(text: string): boolean {
+  // Lines like "1.00000 X 7.70000" or "00000 X 28.50000"
+  const cleaned = text.replace(/[\s\.,]/g, '')
+  // If more than 70% of characters are digits or X, it's a quantity line
+  const digitCount = (cleaned.match(/[\dxX]/g) || []).length
+  return digitCount / cleaned.length > 0.7
+}
+
+// Normalize a price string that may have OCR errors
+function normalizePrice(priceStr: string): number {
+  // Remove any non-digit and non-decimal characters except spaces
+  let cleaned = priceStr.replace(/[^\d\s\.,]/g, '').trim()
+  
+  // Handle space in middle of price like "7 70000" -> "7.70000"
+  // or "12 90000" -> "12.90000"
+  cleaned = cleaned.replace(/(\d)\s+(\d)/g, '$1.$2')
+  
+  // Remove extra spaces
+  cleaned = cleaned.replace(/\s+/g, '')
+  
+  // Replace comma with dot
+  cleaned = cleaned.replace(',', '.')
+  
+  // If no decimal point, assume last 5 digits are decimals (bolivian receipt format)
+  // e.g., "1290000" -> "12.90000" -> 12.90
+  if (!cleaned.includes('.') && cleaned.length > 4) {
+    const intPart = cleaned.slice(0, -5)
+    const decPart = cleaned.slice(-5)
+    cleaned = `${intPart || '0'}.${decPart}`
+  }
+  
+  const price = parseFloat(cleaned)
+  // Normalize to 2 decimals
+  return Math.round(price * 100) / 100
+}
+
+// Extract price from end of line
+function extractPriceFromEnd(text: string): { price: number; name: string } | null {
+  // Clean the text first - remove common OCR artifacts
+  let cleaned = text
+    .replace(/[—–-]+/g, ' ')  // Replace dashes with space
+    .replace(/[|!]/g, '')      // Remove pipe and exclamation
+    .replace(/\s+/g, ' ')      // Normalize spaces
+    .trim()
+  
+  // Multiple patterns to try for bolivian receipts
+  // Pattern 1: "LECHE DE SOYA SABO 7.70000"
+  // Pattern 2: "GALLETA ORED SELEN 1290000" (no decimal)
+  // Pattern 3: "LECHE DE SOYA SABO - 7 70000" (space in price)
+  
+  // Try to find the last number sequence (the price)
+  const priceMatch = cleaned.match(/^(.+?)\s+(\d[\d\s\.,]*\d)\s*$/)
+  if (priceMatch) {
+    const name = cleanItemName(priceMatch[1])
+    const price = normalizePrice(priceMatch[2])
+    if (name.length > 1 && price > 0 && price < 5000) {
+      return { price, name }
+    }
+  }
+  
+  // Fallback: just find any number at the end
+  const fallbackMatch = cleaned.match(/^(.+?)\s+(\d+)\s*$/)
+  if (fallbackMatch) {
+    const name = cleanItemName(fallbackMatch[1])
+    const price = normalizePrice(fallbackMatch[2])
+    if (name.length > 1 && price > 0 && price < 5000) {
+      return { price, name }
+    }
+  }
+  
+  return null
+}
+
+function parseBolivianReceipt(lines: ParsedLine[], imageUrl: string): Receipt {
+  const items: ReceiptItem[] = []
+  let storeName = ''
+  let date = ''
+  let total = 0
+
+  const datePattern = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/
+  const totalPattern = /total\s*a?\s*pagar/i
+  
+  // Lines to completely skip
+  const skipPatterns = [
+    /^cant\.?\s*p\.?\s*unt/i,
+    /detalle/i,
+    /subtotal/i,
+    /^nit/i,
+    /^factura/i,
+    /^sucursal/i,
+    /^fecha\s*:/i,
+    /cambio/i,
+    /credito\s*fiscal/i,
+    /trx:/i,
+    /cj:/i,
+    /^\*+/,
+    /^-+$/,
+    /^\s*$/
+  ]
+
+  // First pass: find store name and date
+  for (let i = 0; i < Math.min(lines.length, 8); i++) {
+    const text = lines[i].text.trim()
+    
+    // Store name - look for prominent text in first lines
+    if (i < 3 && !storeName && text.length > 3) {
+      const cleaned = text.replace(/\*+/g, '').trim()
+      if (cleaned.length > 2 && !skipPatterns.some(p => p.test(cleaned)) && !/^\d/.test(cleaned)) {
+        storeName = cleaned
+      }
+    }
+    
+    // Date
+    const dateMatch = text.match(datePattern)
+    if (dateMatch && !date) {
+      date = `${dateMatch[1]}/${dateMatch[2]}/${dateMatch[3]}`
+    }
+  }
+
+  // Second pass: extract items
+  // The format is two lines:
+  // Line 1: "1.00000 X 7.70000" (quantity x unit price) - SKIP THIS
+  // Line 2: "LECHE DE SOYA SABO 7.70000" (item name + subtotal) - EXTRACT THIS
+  
+  for (let i = 0; i < lines.length; i++) {
+    const { text, confidence } = lines[i]
+    
+    // Skip empty or system lines
+    if (!text || skipPatterns.some(p => p.test(text))) {
+      continue
+    }
+
+    // Check for total
+    if (totalPattern.test(text)) {
+      const priceMatch = text.match(/(\d+[\.,]\d{2})\s*$/)
+      if (priceMatch) {
+        total = parseFloat(priceMatch[1].replace(',', '.'))
+      }
+      continue
+    }
+
+    // Skip quantity lines (lines with just numbers like "1.00000 X 7.70000")
+    if (isQuantityLine(text)) {
+      continue
+    }
+
+    // Try to extract item from this line (NAME + PRICE format)
+    const extracted = extractPriceFromEnd(text)
+    if (extracted && extracted.name.length > 1 && extracted.price > 0 && extracted.price < 5000) {
+      // Make sure name has at least one letter (not just numbers)
+      if (/[a-zA-Z]/.test(extracted.name)) {
+        items.push({
+          id: generateId(),
+          name: extracted.name,
+          quantity: 1,
+          price: extracted.price,
+          confidence,
+          assignments: []
+        })
+      }
+    }
+  }
+
+  // Calculate total if not found
+  if (total === 0) {
+    total = items.reduce((sum, item) => sum + item.price, 0)
+  }
+
+  return {
+    id: generateId(),
+    storeName: storeName || 'Tienda',
+    date: date || new Date().toLocaleDateString(),
+    items,
+    subtotal: total,
+    tax: 0,
+    total,
+    imageUrl,
+    createdAt: new Date()
+  }
+}
+
+export function createManualReceipt(): Receipt {
+  return {
+    id: generateId(),
+    storeName: 'Entrada Manual',
+    date: new Date().toLocaleDateString(),
+    items: [],
+    subtotal: 0,
+    tax: 0,
+    total: 0,
+    createdAt: new Date()
+  }
+}
