@@ -14,7 +14,7 @@ function AppContent() {
   const { currentStep } = useAppContext()
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -39,12 +39,6 @@ function AppContent() {
         {currentStep === 'assign' && <AssignStep />}
         {currentStep === 'summary' && <SummaryStep />}
       </main>
-
-      <footer className="border-t mt-auto">
-        <div className="container mx-auto px-4 py-4 text-center text-sm text-muted-foreground">
-          Split receipts easily with friends
-        </div>
-      </footer>
     </div>
   )
 }
