@@ -16,17 +16,17 @@ function AppContent() {
   return (
     <div className="bg-background text-foreground">
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-2">
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="overflow-hidden rounded-lg">
                 <Image
                   src="/logo-dark.webp"
                   alt="SplitReceipt Logo"
-                  width={32}
-                  height={32}
+                  width={48}
+                  height={48}
                   priority
-                  className="h-8 w-8 object-contain"
+                  className="h-12 w-12 object-contain"
                 />
               </div>
               <h1 className="text-xl font-bold tracking-tight">SplitReceipt</h1>
@@ -39,7 +39,7 @@ function AppContent() {
         </div>
       </header>
 
-      <main className="container mx-auto px-3 py-4">
+      <main className="container mx-auto px-3 py-8">
         {currentStep === 'buyers' && <BuyersStep />}
         {currentStep === 'upload' && <UploadStep />}
         {currentStep === 'review' && <ReviewStep />}
