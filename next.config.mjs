@@ -6,9 +6,9 @@ const withNextIntl = createNextIntlPlugin(
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // If the user wants to stay with 'export', they might need to follow specific next-intl guidelines for static export.
-  // For now, I'll keep it, but it might needs adjustment.
-  output: 'export',
+  // Conditional export to allow 'npm run dev' to work locally with middleware, 
+  // but generate static files during deployment (npm run build)
+  output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
   trailingSlash: true,
   typescript: {
     ignoreBuildErrors: true,
