@@ -32,6 +32,8 @@
     "dropText": "Drop an image here or click to upload",
     "supportsText": "Supports JPG, PNG, and other image formats",
     "takePhoto": "Take Photo",
+    "capture": "Capture",
+    "cancel": "Cancel",
     "or": "Or",
     "manualEntry": "Enter items manually",
     "loadDemo": "Load demo receipt",

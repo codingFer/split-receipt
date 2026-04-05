@@ -32,8 +32,9 @@ export async function processReceiptImage(imageFile: File): Promise<Receipt> {
 
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = async () => {
+    try {
+      const url = URL.createObjectURL(file)
+      
       const img = new Image()
       img.onload = () => {
         const canvas = document.createElement('canvas')
@@ -59,16 +60,25 @@ function fileToDataUrl(file: File): Promise<string> {
         const ctx = canvas.getContext('2d')
         if (ctx) {
           ctx.drawImage(img, 0, 0, width, height)
-          resolve(canvas.toDataURL('image/jpeg', 0.85))
+          const result = canvas.toDataURL('image/jpeg', 0.85)
+          URL.revokeObjectURL(url)
+          resolve(result)
         } else {
-          resolve(reader.result as string)
+          resolve(url) // Fallback to raw URL
         }
       }
-      img.onerror = reject
-      img.src = reader.result as string
+      img.onerror = () => {
+        URL.revokeObjectURL(url)
+        reject(new Error('Failed to load image'))
+      }
+      img.src = url
+    } catch (err) {
+      // Fallback to FileReader if createObjectURL fails
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(file)
     }
-    reader.onerror = reject
-    reader.readAsDataURL(file)
   })
 }
 
