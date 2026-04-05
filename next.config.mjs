@@ -9,6 +9,7 @@ const nextConfig = {
   // If the user wants to stay with 'export', they might need to follow specific next-intl guidelines for static export.
   // For now, I'll keep it, but it might needs adjustment.
   output: 'export',
+  trailingSlash: true,
   typescript: {
     ignoreBuildErrors: true,
   },
