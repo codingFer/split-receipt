@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useAppContext } from '@/lib/store'
 import { processReceiptImage, createManualReceipt } from '@/lib/ocr'
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,7 @@ export function UploadStep() {
   const [dragActive, setDragActive] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
 
   const handleFile = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -25,7 +26,7 @@ export function UploadStep() {
 
     setError(null)
     setProcessing(true)
-    
+
     // Show preview
     const reader = new FileReader()
     reader.onload = (e) => setPreview(e.target?.result as string)
@@ -46,7 +47,7 @@ export function UploadStep() {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setDragActive(false)
-    
+
     const file = e.dataTransfer.files[0]
     if (file) handleFile(file)
   }, [handleFile])
@@ -61,14 +62,14 @@ export function UploadStep() {
     if (buyers.length === 0) {
       demoBuyers.forEach(buyer => addBuyer(buyer))
     }
-    
+
     // Create receipt with unique ID
     const receipt = {
       ...demoReceipt,
       id: Math.random().toString(36).substring(2, 9),
       createdAt: new Date(),
     }
-    
+
     setReceipt(receipt)
     setStep('review')
   }
@@ -91,9 +92,9 @@ export function UploadStep() {
               <Spinner className="h-8 w-8" />
               <p className="text-muted-foreground">{t('processing')}</p>
               {preview && (
-                <img 
-                  src={preview} 
-                  alt="Receipt preview" 
+                <img
+                  src={preview}
+                  alt="Receipt preview"
                   className="max-h-40 rounded-lg opacity-50"
                 />
               )}
@@ -111,14 +112,21 @@ export function UploadStep() {
               >
                 <input
                   type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+                  accept="image/png, image/jpeg, image/webp"
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) {
+                      handleFile(e.target.files[0])
+                    }
+                  }}
+                  onClick={(e) => {
+                    // Reset value to allow selecting same file again
+                    (e.target as HTMLInputElement).value = ''
+                  }}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
                 <div className="flex flex-col items-center gap-4 text-center">
                   <div className="p-4 rounded-full bg-primary/10">
-                    <Camera className="h-8 w-8 text-primary" />
+                    <Upload className="h-8 w-8 text-primary" />
                   </div>
                   <div>
                     <p className="font-medium">{t('dropText')}</p>
@@ -128,6 +136,27 @@ export function UploadStep() {
                   </div>
                 </div>
               </div>
+
+              <Button
+                className="w-full h-14 text-lg bg-primary hover:bg-primary/90"
+                onClick={() => cameraInputRef.current?.click()}
+              >
+                <Camera className="mr-2 h-6 w-6" />
+                {t('takePhoto')}
+              </Button>
+
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files?.[0]) {
+                    handleFile(e.target.files[0])
+                  }
+                }}
+              />
 
               {error && (
                 <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 text-destructive">
