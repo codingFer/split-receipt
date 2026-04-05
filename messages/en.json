@@ -1,0 +1,128 @@
+{
+  "Index": {
+    "title": "SplitReceipt",
+    "description": "Upload receipts, extract items with OCR, and split expenses between friends",
+    "header": {
+      "title": "SplitReceipt"
+    }
+  },
+  "Footer": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact Us",
+    "rights": "All rights reserved",
+    "description": "Split 💲receipts easily with 🤼friends",
+    "builtBy": "Built by"
+  },
+  "LanguageSwitcher": {
+    "label": "Change language"
+  },
+  "BuyersStep": {
+    "title": "Who's splitting?",
+    "description": "Add the people who will be splitting this receipt. You can always add more later.",
+    "addPerson": "Add a person",
+    "placeholder": "Enter name...",
+    "peopleCount": "People ({count})",
+    "continue": "Continue"
+  },
+  "UploadStep": {
+    "title": "Upload Receipt",
+    "description": "Take a photo or upload an image of your receipt. We'll extract the items automatically.",
+    "processing": "Processing receipt...",
+    "dropText": "Drop an image here or click to upload",
+    "supportsText": "Supports JPG, PNG, and other image formats",
+    "or": "Or",
+    "manualEntry": "Enter items manually",
+    "loadDemo": "Load demo receipt",
+    "back": "Back",
+    "skip": "Skip OCR",
+    "errorImage": "Please upload an image file",
+    "errorProcess": "Failed to process image. You can try again or enter items manually."
+  },
+  "StepIndicator": {
+    "buyers": "People",
+    "upload": "Upload",
+    "review": "Review",
+    "assign": "Assign",
+    "summary": "Summary"
+  },
+  "AssignStep": {
+    "title": "Receipt Items",
+    "selectItem": "Select an item to assign it",
+    "splitAllEqual": "Split everything equally",
+    "assigned": "Assigned",
+    "selectAnItem": "Select an item",
+    "clickListItem": "Click on an item from the list",
+    "modes": {
+      "full": {
+        "label": "One person",
+        "description": "All for one person"
+      },
+      "equal": {
+        "label": "Equal parts",
+        "description": "Split equally"
+      },
+      "quantity": {
+        "label": "By quantity",
+        "description": "Each person their units"
+      },
+      "custom": {
+        "label": "Custom amount",
+        "description": "Specify amounts"
+      }
+    },
+    "instructions": {
+      "full": "Select who pays:",
+      "equal": "Select who splits:",
+      "quantity": "Indicate how many units each one took:",
+      "custom": "Enter the amount for each person:"
+    },
+    "currencySymbol": "Bs.",
+    "totalUnits": "Total units:",
+    "pricePerUnit": "Price per unit:",
+    "totalAssigned": "Total assigned:",
+    "assignItem": "Assign Item",
+    "back": "Back",
+    "viewSummary": "View Summary"
+  },
+  "ReviewStep": {
+    "title": "Review Items",
+    "description": "Review and edit the extracted items. Fix any errors from the OCR process.",
+    "storeName": "Store Name",
+    "date": "Date",
+    "itemsCount": "Items ({count})",
+    "noItems": "No items yet. Add items manually below.",
+    "placeholders": {
+      "name": "Name",
+      "qty": "Qty",
+      "price": "Price",
+      "itemName": "Item name"
+    },
+    "confidence": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "total": "Total",
+    "originalReceipt": "Original Receipt",
+    "back": "Back",
+    "assignItems": "Assign Items"
+  },
+  "SummaryStep": {
+    "title": "Summary",
+    "total": "Total",
+    "grandTotal": "Grand Total",
+    "shareYoodle": "Share on Yoodle",
+    "share": "Share",
+    "copy": "Copy",
+    "export": "Export",
+    "back": "Back",
+    "startNew": "Start New",
+    "copied": "Summary copied to clipboard!",
+    "exportTitle": "Receipt Split Summary"
+  },
+  "Metadata": {
+    "title": "SplitReceipt - Split Expenses Easily",
+    "description": "Upload receipts, extract items with OCR, and split expenses between friends"
+  }
+}

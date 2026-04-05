@@ -1,21 +1,23 @@
 'use client'
 
 import { Github, Linkedin, Heart } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export function Footer() {
+  const t = useTranslations('Footer')
   return (
     <footer className="w-full py-4 mt-auto border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-muted-foreground">
 
         {/* Helper Text */}
         <div className="flex items-center gap-1 order-1 md:order-1">
-          <span>Split 💲receipts easily with 🤼friends</span>
+          <span>{t('description', { defaultMessage: 'Split 💲receipts easily with 🤼friends' })}</span>
         </div>
 
         {/* Attribution & Links */}
         <div className="flex items-center gap-4 order-2 md:order-2">
           <div className="flex items-center gap-1.5">
-            <span>Built by</span>
+            <span>{t('builtBy', { defaultMessage: 'Built by' })}</span>
             <a
               href="https://linkedin.com/in/codingfer"
               target="_blank"

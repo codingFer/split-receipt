@@ -1,0 +1,128 @@
+{
+  "Index": {
+    "title": "SplitReceipt",
+    "description": "Carga tickets, extrae productos con OCR y divide gastos con amigos",
+    "header": {
+      "title": "SplitReceipt"
+    }
+  },
+  "Footer": {
+    "privacy": "Política de Privacidad",
+    "terms": "Términos de Servicio",
+    "contact": "Contáctanos",
+    "rights": "Todos los derechos reservados",
+    "description": "Divide 💲tickets fácilmente con 🤼amigos",
+    "builtBy": "Creado por"
+  },
+  "LanguageSwitcher": {
+    "label": "Cambiar idioma"
+  },
+  "BuyersStep": {
+    "title": "¿Quiénes dividen?",
+    "description": "Agrega a las personas que dividirán este ticket. Siempre puedes agregar más después.",
+    "addPerson": "Agregar persona",
+    "placeholder": "Nombre...",
+    "peopleCount": "Personas ({count})",
+    "continue": "Continuar"
+  },
+  "UploadStep": {
+    "title": "Subir Ticket",
+    "description": "Toma una foto o sube una imagen de tu ticket. Extraeremos los productos automáticamente.",
+    "processing": "Procesando ticket...",
+    "dropText": "Arrastra una imagen aquí o haz clic para subir",
+    "supportsText": "Soporta JPG, PNG y otros formatos de imagen",
+    "or": "O",
+    "manualEntry": "Ingresar productos manualmente",
+    "loadDemo": "Cargar ticket de demostración",
+    "back": "Volver",
+    "skip": "Saltar OCR",
+    "errorImage": "Por favor sube un archivo de imagen",
+    "errorProcess": "Error al procesar la imagen. Puedes intentar de nuevo o ingresar los productos manualmente."
+  },
+  "StepIndicator": {
+    "buyers": "Personas",
+    "upload": "Subir",
+    "review": "Revisar",
+    "assign": "Asignar",
+    "summary": "Resumen"
+  },
+  "AssignStep": {
+    "title": "Items del Recibo",
+    "selectItem": "Selecciona un item para asignarlo",
+    "splitAllEqual": "Dividir todo en partes iguales",
+    "assigned": "Asignado",
+    "selectAnItem": "Selecciona un item",
+    "clickListItem": "Haz clic en un item de la lista",
+    "modes": {
+      "full": {
+        "label": "Una persona",
+        "description": "Todo para una persona"
+      },
+      "equal": {
+        "label": "Partes iguales",
+        "description": "Dividir equitativamente"
+      },
+      "quantity": {
+        "label": "Por cantidad",
+        "description": "Cada quien sus unidades"
+      },
+      "custom": {
+        "label": "Monto custom",
+        "description": "Especificar montos"
+      }
+    },
+    "instructions": {
+      "full": "Selecciona quien paga:",
+      "equal": "Selecciona quienes dividen:",
+      "quantity": "Indica cuantas unidades llevo cada uno:",
+      "custom": "Ingresa el monto de cada uno:"
+    },
+    "currencySymbol": "Bs.",
+    "totalUnits": "Total unidades:",
+    "pricePerUnit": "Precio por unidad:",
+    "totalAssigned": "Total asignado:",
+    "assignItem": "Asignar Item",
+    "back": "Atrás",
+    "viewSummary": "Ver Resumen"
+  },
+  "ReviewStep": {
+    "title": "Revisar Productos",
+    "description": "Revisa y edita los productos extraídos. Corrige cualquier error del proceso OCR.",
+    "storeName": "Nombre de la Tienda",
+    "date": "Fecha",
+    "itemsCount": "Productos ({count})",
+    "noItems": "No hay productos aún. Agrega productos manualmente abajo.",
+    "placeholders": {
+      "name": "Nombre",
+      "qty": "Cant.",
+      "price": "Precio",
+      "itemName": "Nombre del producto"
+    },
+    "confidence": {
+      "high": "Alta",
+      "medium": "Media",
+      "low": "Baja"
+    },
+    "total": "Total",
+    "originalReceipt": "Ticket Original",
+    "back": "Volver",
+    "assignItems": "Asignar Productos"
+  },
+  "SummaryStep": {
+    "title": "Resumen",
+    "total": "Total",
+    "grandTotal": "Total General",
+    "shareYoodle": "Compartir en Yoodle",
+    "share": "Compartir",
+    "copy": "Copiar",
+    "export": "Exportar",
+    "back": "Volver",
+    "startNew": "Empezar de nuevo",
+    "copied": "Resumen copiado al portapapeles!",
+    "exportTitle": "Resumen de División de Recibo"
+  },
+  "Metadata": {
+    "title": "SplitReceipt - Divide Gastos Fácilmente",
+    "description": "Carga tickets, extrae productos con OCR y divide gastos con amigos"
+  }
+}

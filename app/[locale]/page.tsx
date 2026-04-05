@@ -9,9 +9,12 @@ import { AssignStep } from '@/components/steps/assign-step'
 import { SummaryStep } from '@/components/steps/summary-step'
 import { useAppContext } from '@/lib/store'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
+import { LanguageSwitcher } from '@/components/language-switcher'
 
 function AppContent() {
   const { currentStep } = useAppContext()
+  const t = useTranslations('Index');
 
   return (
     <div className="bg-background text-foreground">
@@ -29,12 +32,15 @@ function AppContent() {
                   className="h-12 w-12 object-contain"
                 />
               </div>
-              <h1 className="text-xl font-bold tracking-tight">SplitReceipt</h1>
+              <h1 className="text-xl font-bold tracking-tight">{t('header.title')}</h1>
             </div>
             <div className="flex-1 flex justify-center">
               <StepIndicator />
             </div>
-            <div className="hidden sm:block w-32" />
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <div className="hidden sm:block w-8" />
+            </div>
           </div>
         </div>
       </header>

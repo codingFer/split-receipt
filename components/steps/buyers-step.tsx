@@ -8,8 +8,10 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { FieldGroup, Field, FieldLabel } from '@/components/ui/field'
 import { Plus, Trash2, Edit2, Check, X, ArrowRight, Users } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export function BuyersStep() {
+  const t = useTranslations('BuyersStep')
   const { buyers, addBuyer, updateBuyer, removeBuyer, setStep } = useAppContext()
   const [newName, setNewName] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -50,19 +52,19 @@ export function BuyersStep() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Who&apos;s splitting?
+            {t('title')}
           </CardTitle>
           <CardDescription>
-            Add the people who will be splitting this receipt. You can always add more later.
+            {t('description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <FieldGroup>
             <Field>
-              <FieldLabel>Add a person</FieldLabel>
+              <FieldLabel>{t('addPerson')}</FieldLabel>
               <div className="flex gap-2">
                 <Input
-                  placeholder="Enter name..."
+                  placeholder={t('placeholder')}
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
@@ -77,7 +79,7 @@ export function BuyersStep() {
           {buyers.length > 0 && (
             <div className="space-y-2">
               <p className="text-sm font-medium text-muted-foreground">
-                People ({buyers.length})
+                {t('peopleCount', { count: buyers.length })}
               </p>
               <div className="space-y-2">
                 {buyers.map((buyer) => (
@@ -151,7 +153,7 @@ export function BuyersStep() {
           disabled={buyers.length === 0}
           size="lg"
         >
-          Continue
+          {t('continue')}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>

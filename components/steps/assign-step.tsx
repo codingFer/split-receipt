@@ -22,10 +22,12 @@ import type { ReceiptItem } from '@/lib/types'
 import { formatCurrency } from '@/lib/currency'
 import { getProductEmoji } from '@/lib/product-emoji'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 
 type SplitMode = 'full' | 'equal' | 'custom' | 'quantity'
 
 export function AssignStep() {
+  const t = useTranslations('AssignStep')
   const { currentReceipt, buyers, assignItem, setStep } = useAppContext()
   const [selectedItem, setSelectedItem] = useState<string | null>(null)
   const [splitMode, setSplitMode] = useState<SplitMode>('full')
@@ -200,10 +202,10 @@ export function AssignStep() {
   const selectedItemData = currentReceipt.items.find(i => i.id === selectedItem)
 
   const splitModes: { value: SplitMode; label: string; icon: typeof User; description: string }[] = [
-    { value: 'full', label: 'Una persona', icon: User, description: 'Todo para una persona' },
-    { value: 'equal', label: 'Partes iguales', icon: Users, description: 'Dividir equitativamente' },
-    { value: 'quantity', label: 'Por cantidad', icon: Hash, description: 'Cada quien sus unidades' },
-    { value: 'custom', label: 'Monto custom', icon: Split, description: 'Especificar montos' },
+    { value: 'full', label: t('modes.full.label'), icon: User, description: t('modes.full.description') },
+    { value: 'equal', label: t('modes.equal.label'), icon: Users, description: t('modes.equal.description') },
+    { value: 'quantity', label: t('modes.quantity.label'), icon: Hash, description: t('modes.quantity.description') },
+    { value: 'custom', label: t('modes.custom.label'), icon: Split, description: t('modes.custom.description') },
   ]
 
   return (
@@ -214,10 +216,10 @@ export function AssignStep() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Split className="h-5 w-5" />
-              Items del Recibo
+              {t('title')}
             </CardTitle>
             <CardDescription>
-              Selecciona un item para asignarlo
+              {t('selectItem')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -227,7 +229,7 @@ export function AssignStep() {
               onClick={handleEqualSplitAll}
             >
               <Users className="mr-2 h-4 w-4" />
-              Dividir todo en partes iguales
+              {t('splitAllEqual')}
             </Button>
 
             <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
@@ -283,7 +285,7 @@ export function AssignStep() {
             </div>
 
             <div className="flex justify-between items-center pt-4 border-t">
-              <span className="text-sm text-muted-foreground">Asignado</span>
+              <span className="text-sm text-muted-foreground">{t('assigned')}</span>
               <span className="font-mono">
                 {formatCurrency(getAssignedTotal())} / {formatCurrency(currentReceipt.items.reduce((s, i) => s + i.price, 0))}
               </span>
@@ -298,12 +300,12 @@ export function AssignStep() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   {selectedItemData && <span className="text-xl">{getProductEmoji(selectedItemData.name)}</span>}
-                  {selectedItemData ? selectedItemData.name : 'Selecciona un item'}
+                  {selectedItemData ? selectedItemData.name : t('selectAnItem')}
                 </CardTitle>
                 <CardDescription>
                   {selectedItemData
                     ? formatCurrency(selectedItemData.price)
-                    : 'Haz clic en un item de la lista'
+                    : t('clickListItem')
                   }
                 </CardDescription>
               </div>
@@ -349,10 +351,10 @@ export function AssignStep() {
                 {/* Buyer Selection based on mode */}
                 <div className="space-y-2">
                   <p className="text-sm font-medium">
-                    {splitMode === 'full' && 'Selecciona quien paga:'}
-                    {splitMode === 'equal' && 'Selecciona quienes dividen:'}
-                    {splitMode === 'quantity' && 'Indica cuantas unidades llevo cada uno:'}
-                    {splitMode === 'custom' && 'Ingresa el monto de cada uno:'}
+                    {splitMode === 'full' && t('instructions.full')}
+                    {splitMode === 'equal' && t('instructions.equal')}
+                    {splitMode === 'quantity' && t('instructions.quantity')}
+                    {splitMode === 'custom' && t('instructions.custom')}
                   </p>
 
                   <div className="space-y-2">
@@ -438,7 +440,7 @@ export function AssignStep() {
                           {splitMode === 'custom' && (
                             <div className="px-3 pb-3">
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground">Bs</span>
+                                <span className="text-muted-foreground">{t('currencySymbol')}</span>
                                 <Input
                                   type="number"
                                   step="0.01"
@@ -466,11 +468,11 @@ export function AssignStep() {
                   {splitMode === 'quantity' && getTotalQuantity() > 0 && (
                     <div className="p-3 bg-muted/50 rounded-lg space-y-1">
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Total unidades:</span>
+                        <span className="text-muted-foreground">{t('totalUnits')}</span>
                         <span className="font-mono">{getTotalQuantity()}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Precio por unidad:</span>
+                        <span className="text-muted-foreground">{t('pricePerUnit')}</span>
                         <span className="font-mono">{formatCurrency(getPricePerUnit())}</span>
                       </div>
                     </div>
@@ -480,7 +482,7 @@ export function AssignStep() {
                   {splitMode === 'custom' && (
                     <div className="p-3 bg-muted/50 rounded-lg">
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Total asignado:</span>
+                        <span className="text-muted-foreground">{t('totalAssigned')}</span>
                         <span className={cn(
                           "font-mono",
                           Math.abs(Object.values(customAmounts).reduce((s, v) => s + (parseFloat(v) || 0), 0) - selectedItemData.price) > 0.01
@@ -501,13 +503,13 @@ export function AssignStep() {
                   disabled={selectedBuyers.length === 0}
                 >
                   <Check className="mr-2 h-4 w-4" />
-                  Asignar Item
+                  {t('assignItem')}
                 </Button>
               </div>
             ) : (
               <div className="text-center py-12 text-muted-foreground">
                 <Split className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                <p>Selecciona un item de la lista para asignarlo</p>
+                <p>{t('selectItem')}</p>
               </div>
             )}
           </CardContent>
@@ -517,14 +519,14 @@ export function AssignStep() {
       <div className="flex justify-between">
         <Button variant="outline" onClick={() => setStep('review')}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Atras
+          {t('back')}
         </Button>
         <Button
           onClick={() => setStep('summary')}
           disabled={!allItemsAssigned}
           size="lg"
         >
-          Ver Resumen
+          {t('viewSummary')}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>

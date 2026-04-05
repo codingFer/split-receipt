@@ -15,8 +15,10 @@ import {
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/currency'
 import { getProductEmoji } from '@/lib/product-emoji'
+import { useTranslations } from 'next-intl'
 
 export function SummaryStep() {
+  const t = useTranslations('SummaryStep')
   const { currentReceipt, calculateSummaries, setStep, reset } = useAppContext()
   
   if (!currentReceipt) return null
@@ -29,7 +31,7 @@ export function SummaryStep() {
       `${s.buyer.name}: ${formatCurrency(s.total)}`
     ).join('\n')
     
-    return `${currentReceipt.storeName} - ${currentReceipt.date}\n\n${text}\n\nTotal: ${formatCurrency(grandTotal)}`
+    return `${currentReceipt.storeName} - ${currentReceipt.date}\n\n${text}\n\n${t('total')}: ${formatCurrency(grandTotal)}`
   }
 
   const handleShareYoodle = () => {
@@ -42,7 +44,7 @@ export function SummaryStep() {
   const handleCopyToClipboard = async () => {
     const fullText = generateShareText()
     await navigator.clipboard.writeText(fullText)
-    alert('Resumen copiado al portapapeles!')
+    alert(t('copied'))
   }
 
   const handleNativeShare = async () => {
@@ -60,7 +62,7 @@ export function SummaryStep() {
 
   const handleExport = () => {
     const lines = [
-      `Receipt Split Summary`,
+      `${t('exportTitle')}`,
       `${currentReceipt.storeName} - ${currentReceipt.date}`,
       ``,
       `---`,
@@ -76,7 +78,7 @@ export function SummaryStep() {
     })
 
     lines.push(`---`)
-    lines.push(`Grand Total: ${formatCurrency(grandTotal)}`)
+    lines.push(`${t('grandTotal')}: ${formatCurrency(grandTotal)}`)
 
     const blob = new Blob([lines.join('\n')], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
@@ -93,7 +95,7 @@ export function SummaryStep() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />
-            Summary
+            {t('title')}
           </CardTitle>
           <CardDescription>
             {currentReceipt.storeName} - {currentReceipt.date}
@@ -133,7 +135,7 @@ export function SummaryStep() {
           ))}
 
           <div className="flex justify-between items-center pt-2">
-            <span className="text-lg font-semibold">Grand Total</span>
+            <span className="text-lg font-semibold">{t('grandTotal')}</span>
             <span className="text-2xl font-bold font-mono">
               {formatCurrency(grandTotal)}
             </span>
@@ -147,20 +149,20 @@ export function SummaryStep() {
           onClick={handleShareYoodle}
         >
           <MessageCircle className="mr-2 h-4 w-4" />
-          Compartir en Yoodle
+          {t('shareYoodle')}
         </Button>
         <div className="flex flex-col sm:flex-row gap-3">
           <Button variant="outline" className="flex-1" onClick={handleNativeShare}>
             <Share2 className="mr-2 h-4 w-4" />
-            Compartir
+            {t('share')}
           </Button>
           <Button variant="outline" className="flex-1" onClick={handleCopyToClipboard}>
             <Copy className="mr-2 h-4 w-4" />
-            Copiar
+            {t('copy')}
           </Button>
           <Button variant="outline" className="flex-1" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
-            Exportar
+            {t('export')}
           </Button>
         </div>
       </div>
@@ -168,11 +170,11 @@ export function SummaryStep() {
       <div className="flex justify-between">
         <Button variant="outline" onClick={() => setStep('assign')}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
+          {t('back')}
         </Button>
         <Button onClick={reset} variant="secondary">
           <RotateCcw className="mr-2 h-4 w-4" />
-          Start New
+          {t('startNew')}
         </Button>
       </div>
     </div>

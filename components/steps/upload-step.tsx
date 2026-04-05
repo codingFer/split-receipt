@@ -8,8 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Spinner } from '@/components/ui/spinner'
 import { Upload, Camera, FileText, ArrowLeft, ArrowRight, AlertCircle, FlaskConical } from 'lucide-react'
 import { demoBuyers, demoReceipt } from '@/lib/demo-data'
+import { useTranslations } from 'next-intl'
 
 export function UploadStep() {
+  const t = useTranslations('UploadStep')
   const { setReceipt, setStep, setProcessing, isProcessing, addBuyer, buyers } = useAppContext()
   const [dragActive, setDragActive] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -17,7 +19,7 @@ export function UploadStep() {
 
   const handleFile = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      setError('Please upload an image file')
+      setError(t('errorImage'))
       return
     }
 
@@ -35,7 +37,7 @@ export function UploadStep() {
       setStep('review')
     } catch (err) {
       console.error('OCR Error:', err)
-      setError('Failed to process image. You can try again or enter items manually.')
+      setError(t('errorProcess'))
     } finally {
       setProcessing(false)
     }
@@ -77,17 +79,17 @@ export function UploadStep() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Upload Receipt
+            {t('title')}
           </CardTitle>
           <CardDescription>
-            Take a photo or upload an image of your receipt. We&apos;ll extract the items automatically.
+            {t('description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {isProcessing ? (
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
               <Spinner className="h-8 w-8" />
-              <p className="text-muted-foreground">Processing receipt...</p>
+              <p className="text-muted-foreground">{t('processing')}</p>
               {preview && (
                 <img 
                   src={preview} 
@@ -119,9 +121,9 @@ export function UploadStep() {
                     <Camera className="h-8 w-8 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium">Drop an image here or click to upload</p>
+                    <p className="font-medium">{t('dropText')}</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Supports JPG, PNG, and other image formats
+                      {t('supportsText')}
                     </p>
                   </div>
                 </div>
@@ -139,7 +141,7 @@ export function UploadStep() {
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Or</span>
+                  <span className="bg-card px-2 text-muted-foreground">{t('or')}</span>
                 </div>
               </div>
 
@@ -149,7 +151,7 @@ export function UploadStep() {
                 onClick={handleManualEntry}
               >
                 <FileText className="mr-2 h-4 w-4" />
-                Enter items manually
+                {t('manualEntry')}
               </Button>
 
               <Button
@@ -158,7 +160,7 @@ export function UploadStep() {
                 onClick={handleLoadDemo}
               >
                 <FlaskConical className="mr-2 h-4 w-4" />
-                Load demo receipt
+                {t('loadDemo')}
               </Button>
             </>
           )}
@@ -168,14 +170,14 @@ export function UploadStep() {
       <div className="flex justify-between">
         <Button variant="outline" onClick={() => setStep('buyers')}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
+          {t('back')}
         </Button>
         <Button
           onClick={() => setStep('review')}
           disabled={isProcessing}
           variant="ghost"
         >
-          Skip OCR
+          {t('skip')}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>

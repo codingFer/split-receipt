@@ -4,6 +4,7 @@ import { useAppContext } from '@/lib/store'
 import { cn } from '@/lib/utils'
 import { Users, Upload, FileText, Split, Calculator } from 'lucide-react'
 import type { AppStep } from '@/lib/types'
+import { useTranslations } from 'next-intl'
 
 const steps: { key: AppStep; label: string; icon: typeof Users }[] = [
   { key: 'buyers', label: 'People', icon: Users },
@@ -14,6 +15,7 @@ const steps: { key: AppStep; label: string; icon: typeof Users }[] = [
 ]
 
 export function StepIndicator() {
+  const t = useTranslations('StepIndicator')
   const { currentStep, setStep, buyers, currentReceipt } = useAppContext()
 
   const currentIndex = steps.findIndex(s => s.key === currentStep)
@@ -57,7 +59,7 @@ export function StepIndicator() {
               )}
             >
               <Icon className="h-4 w-4" />
-              <span className="hidden sm:inline text-sm font-medium">{step.label}</span>
+              <span className="hidden sm:inline text-sm font-medium">{t(step.key)}</span>
             </button>
             {index < steps.length - 1 && (
               <div className={cn(
