@@ -124,5 +124,11 @@
   "Metadata": {
     "title": "SplitReceipt - Split Expenses Easily",
     "description": "Upload receipts, extract items with OCR, and split expenses between friends"
+  },
+  "ThemeSwitcher": {
+    "label": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
   }
 }

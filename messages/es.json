@@ -124,5 +124,11 @@
   "Metadata": {
     "title": "SplitReceipt - Divide Gastos Fácilmente",
     "description": "Carga tickets, extrae productos con OCR y divide gastos con amigos"
+  },
+  "ThemeSwitcher": {
+    "label": "Cambiar tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema"
   }
 }

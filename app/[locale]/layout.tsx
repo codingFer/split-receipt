@@ -7,9 +7,10 @@ import {NextIntlClientProvider} from 'next-intl';
 import {getMessages, getTranslations} from 'next-intl/server';
 import {notFound} from 'next/navigation';
 import {routing} from '@/i18n/routing';
+import { ThemeProvider } from "@/components/theme-provider"
 
 const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ Geist_Mono: ["latin"] });
+const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export async function generateMetadata({
   params
@@ -62,15 +63,22 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
       <body className="font-sans antialiased flex flex-col min-h-screen">
-        <NextIntlClientProvider messages={messages}>
-          <main className="flex-1">
-            {children}
-          </main>
-          <Footer />
-          <Analytics />
-        </NextIntlClientProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <NextIntlClientProvider messages={messages}>
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+            <Analytics />
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
