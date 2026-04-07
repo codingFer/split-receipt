@@ -11,7 +11,7 @@ export interface AppState {
 }
 
 export interface AppActions {
-  addBuyer: (buyer: Omit<Buyer, 'id'>) => void
+  addBuyer: (buyer: Omit<Buyer, 'id'> & { id?: string }) => void
   updateBuyer: (id: string, updates: Partial<Buyer>) => void
   removeBuyer: (id: string) => void
   setReceipt: (receipt: Receipt | null) => void

@@ -18,11 +18,19 @@
     "label": "Cambiar idioma"
   },
   "BuyersStep": {
-    "title": "¿Quiénes dividen?",
+    "title": "¿Qué tripulantes se dividirán la factura?",
     "description": "Agrega a las personas que dividirán este ticket. Siempre puedes agregar más después.",
     "addPerson": "Agregar persona",
     "placeholder": "Nombre...",
     "peopleCount": "Personas ({count})",
+    "joined": "¡Se unió!",
+    "customize": "Personalizar",
+    "nameLabel": "Nombre",
+    "colorLabel": "Color",
+    "deleteAction": "Eliminar",
+    "lobbyDescription": "Agrega a los tripulantes que compartirán la cuenta y haz clic en ellos para personalizarlos.",
+    "playersJoined": "{count} tripulantes a bordo",
+    "waitingForPlayers": "Esperando a la tripulación...",
     "continue": "Continuar"
   },
   "UploadStep": {

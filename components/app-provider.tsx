@@ -18,8 +18,8 @@ const initialState: AppState = {
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>(initialState)
 
-  const addBuyer = useCallback((buyer: Omit<Buyer, 'id'>) => {
-    const newBuyer: Buyer = { ...buyer, id: generateId() }
+  const addBuyer = useCallback((buyer: Omit<Buyer, 'id'> & { id?: string }) => {
+    const newBuyer: Buyer = { ...buyer, id: buyer.id || generateId() }
     setState(prev => ({ ...prev, buyers: [...prev.buyers, newBuyer] }))
   }, [])
 

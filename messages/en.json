@@ -18,11 +18,19 @@
     "label": "Change language"
   },
   "BuyersStep": {
-    "title": "Who's splitting?",
+    "title": "Which crewmates are splitting the bill?",
     "description": "Add the people who will be splitting this receipt. You can always add more later.",
     "addPerson": "Add a person",
     "placeholder": "Enter name...",
     "peopleCount": "People ({count})",
+    "joined": "Joined!",
+    "customize": "Customize",
+    "nameLabel": "Name",
+    "colorLabel": "Color",
+    "deleteAction": "Delete",
+    "lobbyDescription": "Add the crewmates sharing the bill and click them to customize.",
+    "playersJoined": "{count} crewmates aboard",
+    "waitingForPlayers": "Waiting for crewmates...",
     "continue": "Continue"
   },
   "UploadStep": {

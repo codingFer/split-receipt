@@ -17,7 +17,7 @@ export interface ReceiptItem {
 export interface ItemAssignment {
   buyerId: string
   amount: number // The amount this buyer pays for this item
-  splitType: 'full' | 'equal' | 'custom'
+  splitType: 'full' | 'equal' | 'custom' | 'quantity'
 }
 
 export interface Receipt {
