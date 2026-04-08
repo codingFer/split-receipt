@@ -24,6 +24,7 @@ export function BuyersStep() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
   const [lastJoinedId, setLastJoinedId] = useState<string | null>(null)
+  const [dyingId, setDyingId] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleAdd = () => {
@@ -47,6 +48,15 @@ export function BuyersStep() {
     if (!editingName.trim()) return
     updateBuyer(id, { name: editingName.trim() })
     setEditingId(null)
+  }
+
+  const handleRemove = (id: string) => {
+    setDyingId(id)
+    // Wait for the "kill" animation to play (red flash/shake)
+    setTimeout(() => {
+      removeBuyer(id)
+      setDyingId(null)
+    }, 1200) // Slightly longer to let the animation feel impactful
   }
 
   const handleColorChange = (buyerId: string, color: string) => {
@@ -99,6 +109,19 @@ export function BuyersStep() {
         {/* Floor Line */}
         <div className="absolute bottom-0 left-0 right-0 h-1/4 bg-slate-900/40 border-t border-white/5" />
 
+        {/* Death Flash Effect */}
+        <AnimatePresence>
+          {dyingId && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 0.4, 0] }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className="absolute inset-0 bg-red-600 z-40 pointer-events-none"
+            />
+          )}
+        </AnimatePresence>
+
         {/* Player Count HUD (Top Right) */}
         <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-20">
           <div className="bg-black/60 backdrop-blur-md px-3 sm:px-4 py-1.5 rounded-full border border-white/10 flex items-center gap-2">
@@ -110,7 +133,13 @@ export function BuyersStep() {
         </div>
 
         {/* Characters Container */}
-        <div className="relative h-full flex items-end justify-center pb-20 sm:pb-24 px-4 gap-2 sm:gap-8 min-w-max mx-auto overflow-visible">
+        <motion.div 
+          animate={dyingId ? {
+            x: [0, -4, 4, -4, 4, 0],
+          } : {}}
+          transition={{ duration: 0.4 }}
+          className="relative h-full flex items-end justify-center pb-20 sm:pb-24 px-4 gap-2 sm:gap-8 min-w-max mx-auto overflow-visible"
+        >
           <AnimatePresence mode="popLayout">
             {buyers.map((buyer) => (
               <motion.div
@@ -119,8 +148,41 @@ export function BuyersStep() {
                 initial={{ y: -200, opacity: 0, scale: 0.5 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
                 exit={{ y: 50, opacity: 0, scale: 0.5 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 className="z-10 relative px-1 sm:px-0"
               >
+                {/* Kill Animation Overlay */}
+                <AnimatePresence>
+                  {dyingId === buyer.id && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: [1, 1.5, 1.2] }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-x-0 -top-4 bottom-0 z-50 flex items-center justify-center pointer-events-none"
+                    >
+                      <div className="relative w-full h-full flex items-center justify-center">
+                        <motion.div 
+                          initial={{ pathLength: 0, opacity: 0 }}
+                          animate={{ pathLength: 1, opacity: 1 }}
+                          transition={{ duration: 0.3 }}
+                          className="absolute w-full h-1 bg-red-600 rotate-45 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.8)]" 
+                        />
+                        <motion.div 
+                          initial={{ pathLength: 0, opacity: 0 }}
+                          animate={{ pathLength: 1, opacity: 1 }}
+                          transition={{ duration: 0.3, delay: 0.1 }}
+                          className="absolute w-full h-1 bg-red-600 -rotate-45 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.8)]" 
+                        />
+                        <motion.div
+                          animate={{ opacity: [1, 0] }}
+                          transition={{ duration: 0.8, repeat: Infinity }}
+                          className="absolute inset-0 bg-red-600/20 rounded-full blur-xl"
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 {lastJoinedId === buyer.id && (
                   <motion.div
                     initial={{ opacity: 0, y: 0 }}
@@ -146,10 +208,10 @@ export function BuyersStep() {
                         <Settings2 className="w-2.5 h-2.5 sm:w-3 h-3 text-white" />
                       </div>
                       <div className="hidden sm:block">
-                        <BuyerAvatar buyer={buyer} size="lg" />
+                        <BuyerAvatar buyer={buyer} size="lg" isDead={dyingId === buyer.id} />
                       </div>
                       <div className="sm:hidden">
-                        <BuyerAvatar buyer={buyer} size="md" />
+                        <BuyerAvatar buyer={buyer} size="md" isDead={dyingId === buyer.id} />
                       </div>
                     </button>
                   </PopoverTrigger>
@@ -198,7 +260,8 @@ export function BuyersStep() {
                             variant="ghost" 
                             size="sm" 
                             className="text-red-500 hover:text-red-600 hover:bg-red-50 rounded-lg h-9 px-3 font-semibold"
-                            onClick={() => removeBuyer(buyer.id)}
+                            disabled={dyingId !== null}
+                            onClick={() => handleRemove(buyer.id)}
                           >
                             <Trash2 className="w-4 h-4 mr-2" />
                             {t('deleteAction')}
@@ -220,7 +283,7 @@ export function BuyersStep() {
               </div>
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* Floating Input Bar Overlay */}
         <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 w-full max-w-sm px-4 sm:px-6 z-30">
