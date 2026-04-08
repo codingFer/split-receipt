@@ -141,41 +141,50 @@ export function ReviewStep() {
                     className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-lg border border-4 bg-card"
                   >
                     {editingId === item.id ? (
-                      <>
-                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
-                          <Input
-                            value={editForm.name}
-                            onChange={(e) => setEditForm(f => ({ ...f, name: e.target.value }))}
-                            placeholder={t('placeholders.name')}
-                            className="col-span-1 sm:col-span-2 w-full"
-                          />
-                          <div className="flex gap-2">
+                      <div className="flex-1 p-2 space-y-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                          <div className="col-span-1 sm:col-span-2">
+                            <FieldLabel className="text-xs mb-1">{t('placeholders.name')}</FieldLabel>
                             <Input
-                              value={editForm.quantity}
-                              onChange={(e) => setEditForm(f => ({ ...f, quantity: e.target.value }))}
-                              placeholder={t('placeholders.qty')}
-                              type="number"
-                              className="w-16 sm:w-20"
-                            />
-                            <Input
-                              value={editForm.price}
-                              onChange={(e) => setEditForm(f => ({ ...f, price: e.target.value }))}
-                              placeholder={t('placeholders.price')}
-                              type="number"
-                              step="0.01"
-                              className="w-20 sm:w-24"
+                              value={editForm.name}
+                              onChange={(e) => setEditForm(f => ({ ...f, name: e.target.value }))}
+                              placeholder={t('placeholders.name')}
+                              className="w-full"
                             />
                           </div>
+                          <div className="grid grid-cols-2 gap-3 sm:col-span-2">
+                             <div>
+                               <FieldLabel className="text-xs mb-1">{t('placeholders.qty')}</FieldLabel>
+                               <Input
+                                  value={editForm.quantity}
+                                  onChange={(e) => setEditForm(f => ({ ...f, quantity: e.target.value }))}
+                                  placeholder={t('placeholders.qty')}
+                                  type="number"
+                               />
+                             </div>
+                             <div>
+                               <FieldLabel className="text-xs mb-1">{t('placeholders.price')}</FieldLabel>
+                               <Input
+                                  value={editForm.price}
+                                  onChange={(e) => setEditForm(f => ({ ...f, price: e.target.value }))}
+                                  placeholder={t('placeholders.price')}
+                                  type="number"
+                                  step="0.01"
+                               />
+                             </div>
+                          </div>
                         </div>
-                        <div className="flex gap-2 mt-2 sm:mt-0">
-                          <Button size="icon" variant="ghost" onClick={handleEditSave}>
-                            <Check className="h-4 w-4" />
+                        <div className="flex justify-end gap-2 pt-2">
+                          <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>
+                            <X className="h-4 w-4 mr-2" />
+                            Cancelar
                           </Button>
-                          <Button size="icon" variant="ghost" onClick={() => setEditingId(null)}>
-                            <X className="h-4 w-4" />
+                          <Button size="sm" onClick={handleEditSave}>
+                            <Check className="h-4 w-4 mr-2" />
+                            Guardar
                           </Button>
                         </div>
-                      </>
+                      </div>
                     ) : (
                       <>
                         <div className="flex-1 min-w-0">
@@ -212,31 +221,58 @@ export function ReviewStep() {
             )}
 
             {/* Add New Item */}
-            <div className="flex items-center gap-2 p-3 rounded-lg border border-dashed bg-muted/30">
-              <Input
-                value={newItem.name}
-                onChange={(e) => setNewItem(n => ({ ...n, name: e.target.value }))}
-                placeholder={t('placeholders.itemName')}
-                className="flex-1"
-              />
-              <Input
-                value={newItem.quantity}
-                onChange={(e) => setNewItem(n => ({ ...n, quantity: e.target.value }))}
-                placeholder={t('placeholders.qty')}
-                type="number"
-                className="w-16"
-              />
-              <Input
-                value={newItem.price}
-                onChange={(e) => setNewItem(n => ({ ...n, price: e.target.value }))}
-                placeholder={t('placeholders.price')}
-                type="number"
-                step="0.01"
-                className="w-24"
-              />
-              <Button onClick={handleAddItem} disabled={!newItem.name || !newItem.price}>
+            <div className="mt-8 p-4 rounded-xl border-2 border-dashed bg-muted/20 space-y-4">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
                 <Plus className="h-4 w-4" />
-              </Button>
+                Agregar nuevo producto
+              </h4>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div className="col-span-1 sm:col-span-2">
+                  <FieldLabel className="text-xs mb-1.5 ml-1">{t('placeholders.name')}</FieldLabel>
+                  <Input
+                    value={newItem.name}
+                    onChange={(e) => setNewItem(n => ({ ...n, name: e.target.value }))}
+                    placeholder={t('placeholders.itemName')}
+                    className="h-11 shadow-sm"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 sm:col-span-2">
+                  <div>
+                    <FieldLabel className="text-xs mb-1.5 ml-1">{t('placeholders.qty')}</FieldLabel>
+                    <Input
+                      value={newItem.quantity}
+                      onChange={(e) => setNewItem(n => ({ ...n, quantity: e.target.value }))}
+                      placeholder={t('placeholders.qty')}
+                      type="number"
+                      className="h-11 shadow-sm"
+                    />
+                  </div>
+                  
+                  <div>
+                    <FieldLabel className="text-xs mb-1.5 ml-1">{t('placeholders.price')}</FieldLabel>
+                    <div className="flex gap-2">
+                      <Input
+                        value={newItem.price}
+                        onChange={(e) => setNewItem(n => ({ ...n, price: e.target.value }))}
+                        placeholder={t('placeholders.price')}
+                        type="number"
+                        step="0.01"
+                        className="h-11 flex-1 shadow-sm"
+                      />
+                      <Button 
+                        onClick={handleAddItem} 
+                        disabled={!newItem.name || !newItem.price}
+                        size="icon"
+                        className="h-11 w-11 shrink-0 animate-in zoom-in-50 duration-300"
+                      >
+                        <Plus className="h-5 w-5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
