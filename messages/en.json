@@ -106,7 +106,7 @@
     "placeholders": {
       "name": "Name",
       "qty": "Qty",
-      "price": "Price",
+      "price": "Total Price",
       "itemName": "Item name"
     },
     "confidence": {
