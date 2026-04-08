@@ -24,6 +24,7 @@ export function UploadStep() {
 
   // 📂 fallback upload
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const pdfInputRef = useRef<HTMLInputElement>(null)
 
   // =============================
   // 📸 Cámara
@@ -81,7 +82,10 @@ export function UploadStep() {
   // 🧠 Procesar archivo
   // =============================
   const handleFile = useCallback(async (file: File) => {
-    if (!file.type.startsWith('image/')) {
+    const isImage = file.type.startsWith('image/')
+    const isPdf = file.type === 'application/pdf'
+
+    if (!isImage && !isPdf) {
       setError(t('errorImage'))
       return
     }
@@ -89,9 +93,13 @@ export function UploadStep() {
     setError(null)
     setProcessing(true)
 
-    const reader = new FileReader()
-    reader.onload = (e) => setPreview(e.target?.result as string)
-    reader.readAsDataURL(file)
+    if (isImage) {
+      const reader = new FileReader()
+      reader.onload = (e) => setPreview(e.target?.result as string)
+      reader.readAsDataURL(file)
+    } else {
+      setPreview(null) // PDFs don't have a simple preview without a library
+    }
 
     try {
       const receipt = await processReceiptImage(file)
@@ -176,20 +184,39 @@ export function UploadStep() {
                 {t('takePhoto')}
               </Button>
 
-              {/* 📂 Upload fallback */}
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                Subir imagen
-              </Button>
+              {/* 📂 Upload buttons */}
+              <div className="grid grid-cols-2 gap-4">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  Subir imagen
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => pdfInputRef.current?.click()}
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  {t('uploadPdf')}
+                </Button>
+              </div>
 
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                className="hidden"
+                onChange={handleUpload}
+              />
+
+              <input
+                ref={pdfInputRef}
+                type="file"
+                accept="application/pdf"
                 className="hidden"
                 onChange={handleUpload}
               />

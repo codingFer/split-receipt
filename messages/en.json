@@ -38,14 +38,16 @@
     "description": "Take a photo or upload an image of your receipt. We'll extract the items automatically.",
     "processing": "Processing receipt...",
     "dropText": "Drop an image here or click to upload",
-    "supportsText": "Supports JPG, PNG, and other image formats",
+    "supportsText": "Supports JPG, PNG, and PDF",
     "takePhoto": "Take Photo",
+    "uploadPdf": "Upload PDF",
     "or": "Or",
     "manualEntry": "Enter items manually",
     "loadDemo": "Load demo receipt",
     "back": "Back",
     "skip": "Skip OCR",
     "errorImage": "Please upload an image file",
+    "errorPdf": "Error processing PDF",
     "errorProcess": "Failed to process image. You can try again or enter items manually."
   },
   "StepIndicator": {

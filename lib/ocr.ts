@@ -10,11 +10,33 @@ interface ParsedLine {
 }
 
 export async function processReceiptImage(imageFile: File): Promise<Receipt> {
+  let imageUrl = ''
+  
+  if (imageFile.type === 'application/pdf') {
+    try {
+      imageUrl = await pdfToDataUrl(imageFile)
+    } catch (err) {
+      console.error('PDF Conversion Error:', err)
+      // Fallback a recibo manual si falla la conversión
+      return {
+        id: generateId(),
+        storeName: imageFile.name.replace('.pdf', ''),
+        date: new Date().toLocaleDateString(),
+        items: [],
+        subtotal: 0,
+        tax: 0,
+        total: 0,
+        createdAt: new Date()
+      }
+    }
+  } else {
+    imageUrl = await fileToDataUrl(imageFile)
+  }
+
   const { createWorker } = await import('tesseract.js')
   const worker = await createWorker('spa')
   
   try {
-    const imageUrl = await fileToDataUrl(imageFile)
     const { data } = await worker.recognize(imageUrl)
     
     const lines: ParsedLine[] = data.lines.map(line => ({
@@ -37,8 +59,8 @@ function fileToDataUrl(file: File): Promise<string> {
       const img = new Image()
       img.onload = () => {
         const canvas = document.createElement('canvas')
-        const MAX_WIDTH = 2000
-        const MAX_HEIGHT = 2000
+        const MAX_WIDTH = 2400 // Aumentado para mejor OCR
+        const MAX_HEIGHT = 2400
         let width = img.width
         let height = img.height
 
@@ -59,7 +81,7 @@ function fileToDataUrl(file: File): Promise<string> {
         const ctx = canvas.getContext('2d')
         if (ctx) {
           ctx.drawImage(img, 0, 0, width, height)
-          resolve(canvas.toDataURL('image/jpeg', 0.85))
+          resolve(canvas.toDataURL('image/jpeg', 0.90))
         } else {
           resolve(reader.result as string)
         }
@@ -70,6 +92,29 @@ function fileToDataUrl(file: File): Promise<string> {
     reader.onerror = reject
     reader.readAsDataURL(file)
   })
+}
+
+async function pdfToDataUrl(file: File): Promise<string> {
+  const pdfjs = await import('pdfjs-dist')
+  // @ts-ignore
+  pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
+
+  const arrayBuffer = await file.arrayBuffer()
+  const loadingTask = pdfjs.getDocument({ data: arrayBuffer })
+  const pdf = await loadingTask.promise
+  const page = await pdf.getPage(1) // Solo procesamos la primera página
+
+  const viewport = page.getViewport({ scale: 2.0 }) // Mayor escala para mejor OCR
+  const canvas = document.createElement('canvas')
+  const context = canvas.getContext('2d')
+
+  canvas.height = viewport.height
+  canvas.width = viewport.width
+
+  if (!context) throw new Error('Could not create canvas context')
+
+  await page.render({ canvasContext: context, viewport }).promise
+  return canvas.toDataURL('image/jpeg', 0.90)
 }
 
 // Clean item name - remove numeric garbage and extra spaces

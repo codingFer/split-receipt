@@ -38,14 +38,16 @@
     "description": "Toma una foto o sube una imagen de tu ticket. Extraeremos los productos automáticamente.",
     "processing": "Procesando ticket...",
     "dropText": "Arrastra una imagen aquí o haz clic para subir",
-    "supportsText": "Soporta JPG, PNG y otros formatos de imagen",
+    "supportsText": "Soporta JPG, PNG y PDF",
     "takePhoto": "Tomar Foto",
+    "uploadPdf": "Subir PDF",
     "or": "O",
     "manualEntry": "Ingresar productos manualmente",
     "loadDemo": "Cargar ticket de demostración",
     "back": "Volver",
     "skip": "Saltar OCR",
     "errorImage": "Por favor sube un archivo de imagen",
+    "errorPdf": "Error al procesar el PDF",
     "errorProcess": "Error al procesar la imagen. Puedes intentar de nuevo o ingresar los productos manualmente."
   },
   "StepIndicator": {
