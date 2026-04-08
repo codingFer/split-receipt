@@ -38,7 +38,7 @@
     "description": "Take a photo or upload an image of your receipt. We'll extract the items automatically.",
     "processing": "Processing receipt...",
     "dropText": "Drop an image here or click to upload",
-    "supportsText": "Supports JPG, PNG, and PDF",
+    "supportsText": "Supports JPG, PNG, and other image formats",
     "takePhoto": "Take Photo",
     "uploadPdf": "Upload PDF",
     "or": "Or",

@@ -212,7 +212,8 @@ function parseBolivianReceipt(lines: ParsedLine[], imageUrl: string): Receipt {
   let total = 0
 
   const datePattern = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/
-  const totalPattern = /total\s*a?\s*pagar/i
+  const datePatternYearFirst = /(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/
+  const totalPattern = /total\s*a?\s*pagar|total\s*bs\.?/i
   
   // Lines to completely skip
   const skipPatterns = [
@@ -223,8 +224,10 @@ function parseBolivianReceipt(lines: ParsedLine[], imageUrl: string): Receipt {
     /^factura/i,
     /^sucursal/i,
     /^fecha\s*:/i,
+    /^fecha\s*de\s*emisi[oó]n/i,
     /cambio/i,
     /credito\s*fiscal/i,
+    /importe\s*base/i,
     /trx:/i,
     /cj:/i,
     /^\*+/,
@@ -233,38 +236,39 @@ function parseBolivianReceipt(lines: ParsedLine[], imageUrl: string): Receipt {
   ]
 
   // First pass: find store name and date
-  for (let i = 0; i < Math.min(lines.length, 8); i++) {
+  for (let i = 0; i < Math.min(lines.length, 15); i++) {
     const text = lines[i].text.trim()
     
     // Store name - look for prominent text in first lines
-    if (i < 3 && !storeName && text.length > 3) {
+    if (i < 5 && !storeName && text.length > 3) {
       const cleaned = text.replace(/\*+/g, '').trim()
-      if (cleaned.length > 2 && !skipPatterns.some(p => p.test(cleaned)) && !/^\d/.test(cleaned)) {
+      if (cleaned.length > 2 && !/factura|cr[ée]dito/i.test(cleaned) && !/^\d/.test(cleaned) && !skipPatterns.some(p => p.test(cleaned))) {
         storeName = cleaned
       }
     }
     
     // Date
-    const dateMatch = text.match(datePattern)
+    const dateMatch = text.match(datePattern) || text.match(datePatternYearFirst)
     if (dateMatch && !date) {
-      date = `${dateMatch[1]}/${dateMatch[2]}/${dateMatch[3]}`
+      if (dateMatch[1].length === 4) {
+        date = `${dateMatch[3]}/${dateMatch[2]}/${dateMatch[1]}`
+      } else {
+        date = `${dateMatch[1]}/${dateMatch[2]}/${dateMatch[3]}`
+      }
     }
   }
 
+  let pendingItemName = ''
+
   // Second pass: extract items
-  // The format is two lines:
-  // Line 1: "1.00000 X 7.70000" (quantity x unit price) - SKIP THIS
-  // Line 2: "LECHE DE SOYA SABO 7.70000" (item name + subtotal) - EXTRACT THIS
-  
   for (let i = 0; i < lines.length; i++) {
     const { text, confidence } = lines[i]
     
-    // Skip empty or system lines
-    if (!text || skipPatterns.some(p => p.test(text))) {
+    if (!text) {
       continue
     }
 
-    // Check for total
+    // Check for total FIRST
     if (totalPattern.test(text)) {
       const priceMatch = text.match(/(\d+[\.,]\d{2})\s*$/)
       if (priceMatch) {
@@ -273,8 +277,30 @@ function parseBolivianReceipt(lines: ParsedLine[], imageUrl: string): Receipt {
       continue
     }
 
-    // Skip quantity lines (lines with just numbers like "1.00000 X 7.70000")
-    if (isQuantityLine(text)) {
+    if (skipPatterns.some(p => p.test(text))) {
+      continue
+    }
+
+    // Skip quantity lines or extract price if pendingItemName exists
+    if (isQuantityLine(text) || /\b\d+[\.,]\d{2}\s*[xX]\s*\d+[\.,]\d{2}/i.test(text)) {
+      if (pendingItemName) {
+        const priceMatch = text.match(/(\d+[\.,]\d{2})\s*$/)
+        if (priceMatch) {
+          const price = parseFloat(priceMatch[1].replace(',', '.'))
+          if (price > 0 && price < 5000) {
+            items.push({
+              id: generateId(),
+              name: pendingItemName,
+              quantity: 1,
+              price,
+              confidence,
+              assignments: []
+            })
+            pendingItemName = ''
+            continue
+          }
+        }
+      }
       continue
     }
 
@@ -291,7 +317,18 @@ function parseBolivianReceipt(lines: ParsedLine[], imageUrl: string): Receipt {
           confidence,
           assignments: []
         })
+        pendingItemName = ''
       }
+      continue
+    }
+
+    // If we're here, it might be an item name awaiting its price on the next line
+    const lettersMatch = text.match(/[a-zA-Z]/g)
+    if (lettersMatch && lettersMatch.length > 3) {
+       // Ignore info lines
+       if (!/^(NIT|COD\.?CLIENTE|CUF|NOMBRE|RAZ[OÓ]N|N[O°]?FACTURA)/i.test(text)) {
+           pendingItemName = text.replace(/^[\d\s\-]+/, '').trim()
+       }
     }
   }
 

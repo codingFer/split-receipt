@@ -38,7 +38,7 @@
     "description": "Toma una foto o sube una imagen de tu ticket. Extraeremos los productos automáticamente.",
     "processing": "Procesando ticket...",
     "dropText": "Arrastra una imagen aquí o haz clic para subir",
-    "supportsText": "Soporta JPG, PNG y PDF",
+    "supportsText": "Soporta JPG, PNG y otros formatos de imagen",
     "takePhoto": "Tomar Foto",
     "uploadPdf": "Subir PDF",
     "or": "O",
