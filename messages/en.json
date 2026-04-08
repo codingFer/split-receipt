@@ -43,7 +43,7 @@
     "uploadPdf": "Upload PDF",
     "or": "Or",
     "manualEntry": "Enter items manually",
-    "loadDemo": "Load demo receipt",
+    "load demo receipt": "Load demo receipt",
     "back": "Back",
     "skip": "Skip OCR",
     "errorImage": "Please upload an image file",
@@ -94,7 +94,7 @@
     "totalAssigned": "Total assigned:",
     "assignItem": "Assign Item",
     "back": "Back",
-    "viewSummary": "View Summary"
+    "view Summary": "View Summary"
   },
   "ReviewStep": {
     "title": "Review Items",
@@ -141,5 +141,18 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System"
+  },
+  "About": {
+    "title": "About SplitReceipt",
+    "description": "SplitReceipt is a premium tool designed to simplify splitting expenses among friends using OCR technology.",
+    "version": "Version",
+    "builtBy": "Built with ❤️ by Fernando",
+    "features": {
+      "ocr": "Optical Character Recognition (OCR)",
+      "pdf": "PDF document support",
+      "i18n": "Multi-language (Spanish/English)",
+      "theme": "Dynamic Dark/Light mode"
+    },
+    "close": "Close"
   }
 }

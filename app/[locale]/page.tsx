@@ -12,6 +12,7 @@ import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { ThemeSwitcher } from '@/components/theme-switcher'
+import { AboutDialog } from '@/components/about-dialog'
 
 function AppContent() {
   const { currentStep } = useAppContext()
@@ -43,6 +44,7 @@ function AppContent() {
                 <h1 className="text-lg sm:text-xl font-bold tracking-tight">{t('header.title')}</h1>
               </div>
               <div className="flex items-center gap-2 sm:hidden">
+                <AboutDialog />
                 <ThemeSwitcher />
                 <LanguageSwitcher />
               </div>
@@ -55,6 +57,7 @@ function AppContent() {
 
             {/* Hidden Controls on Mobile (Shown on Desktop) */}
             <div className="hidden sm:flex items-center gap-2">
+              <AboutDialog />
               <ThemeSwitcher />
               <LanguageSwitcher />
             </div>

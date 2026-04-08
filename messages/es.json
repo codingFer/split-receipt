@@ -141,5 +141,18 @@
     "light": "Claro",
     "dark": "Oscuro",
     "system": "Sistema"
+  },
+  "About": {
+    "title": "Sobre SplitReceipt",
+    "description": "SplitReceipt es una herramienta premium diseñada para simplificar la división de gastos entre amigos usando tecnología OCR.",
+    "version": "Versión",
+    "builtBy": "Desarrollado con ❤️ por Fernando",
+    "features": {
+      "ocr": "Reconocimiento Óptico de Caracteres (OCR)",
+      "pdf": "Soporte para documentos PDF",
+      "i18n": "Multilenguaje (Español/Inglés)",
+      "theme": "Modo Oscuro/Claro dinámico"
+    },
+    "close": "Cerrar"
   }
 }
