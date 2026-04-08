@@ -19,7 +19,7 @@ import { useTranslations } from 'next-intl'
 
 export function SummaryStep() {
   const t = useTranslations('SummaryStep')
-  const { currentReceipt, calculateSummaries, setStep, reset } = useAppContext()
+  const { currentReceipt, calculateSummaries, setStep, reset, exportState } = useAppContext()
   
   if (!currentReceipt) return null
 
@@ -31,7 +31,10 @@ export function SummaryStep() {
       `${s.buyer.name}: ${formatCurrency(s.total)}`
     ).join('\n')
     
-    return `${currentReceipt.storeName} - ${currentReceipt.date}\n\n${text}\n\n${t('total')}: ${formatCurrency(grandTotal)}`
+    const state = exportState()
+    const shareUrl = state ? `${window.location.origin}${window.location.pathname}?s=${state}` : window.location.href
+
+    return `${currentReceipt.storeName} - ${currentReceipt.date}\n\n${text}\n\n${t('total')}: ${formatCurrency(grandTotal)}\n\n📄 Ver detalle:\n${shareUrl}`
   }
 
   const handleShareYoodle = () => {

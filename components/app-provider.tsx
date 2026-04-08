@@ -175,6 +175,95 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setState(initialState)
   }, [])
 
+  const exportState = useCallback(() => {
+    if (!state.currentReceipt && state.buyers.length === 0) return null
+    
+    // We omit the image data because it's too large for a URL
+    const compactReceipt = state.currentReceipt ? {
+      n: state.currentReceipt.storeName,
+      d: state.currentReceipt.date,
+      i: state.currentReceipt.items.map(item => ({
+        n: item.name,
+        q: item.quantity,
+        p: item.price,
+        a: item.assignments.map(as => ({
+          b: as.buyerId,
+          a: as.amount,
+          s: as.splitType
+        }))
+      })),
+      t: state.currentReceipt.total
+    } : null
+
+    const data = { 
+      b: state.buyers.map(b => ({ i: b.id, n: b.name, c: b.color })), 
+      r: compactReceipt 
+    }
+
+    try {
+      const str = JSON.stringify(data);
+      return btoa(unescape(encodeURIComponent(str)));
+    } catch (e) {
+      return null
+    }
+  }, [state.buyers, state.currentReceipt])
+
+  const importState = useCallback((encoded: string) => {
+    try {
+      const json = decodeURIComponent(escape(atob(encoded)));
+      const data = JSON.parse(json);
+      
+      const buyers: Buyer[] = (data.b || []).map((b: any) => ({
+        id: b.i,
+        name: b.n,
+        color: b.c
+      }))
+
+      const receipt: Receipt | null = data.r ? {
+        id: generateId(),
+        storeName: data.r.n,
+        date: data.r.d,
+        items: (data.r.i || []).map((item: any) => ({
+          id: generateId(),
+          name: item.n,
+          quantity: item.q,
+          price: item.p,
+          confidence: 1, // Default to high confidence for restored items
+          assignments: (item.a || []).map((as: any) => ({
+            buyerId: as.b,
+            amount: as.a,
+            splitType: as.s
+          }))
+        })),
+        subtotal: data.r.t,
+        tax: 0,
+        total: data.r.t,
+        imageUrl: "", // Image omitted for shared state
+        createdAt: new Date()
+      } : null
+
+      setState(prev => ({
+        ...prev,
+        buyers: buyers,
+        currentReceipt: receipt,
+        currentStep: 'summary'
+      }))
+    } catch (e) {
+      console.error('Failed to import state', e)
+    }
+  }, [])
+
+  // Hydrate from URL on mount
+  useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const stateParam = params.get('s')
+      if (stateParam) {
+        importState(stateParam)
+      }
+    }
+  })
+
   const value = useMemo(() => ({
     ...state,
     addBuyer,
@@ -189,7 +278,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setProcessing,
     calculateSummaries,
     reset,
-  }), [state, addBuyer, updateBuyer, removeBuyer, setReceipt, updateItem, addItem, removeItem, assignItem, setStep, setProcessing, calculateSummaries, reset])
+    exportState,
+    importState,
+  }), [state, addBuyer, updateBuyer, removeBuyer, setReceipt, updateItem, addItem, removeItem, assignItem, setStep, setProcessing, calculateSummaries, reset, exportState, importState])
 
   return (
     <AppContext.Provider value={value}>

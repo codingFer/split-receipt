@@ -23,6 +23,8 @@ export interface AppActions {
   setProcessing: (isProcessing: boolean) => void
   calculateSummaries: () => BuyerSummary[]
   reset: () => void
+  exportState: () => string | null
+  importState: (encoded: string) => void
 }
 
 export type AppContextType = AppState & AppActions
