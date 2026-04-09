@@ -1,7 +1,7 @@
 {
   "Index": {
     "title": "SplitReceipt",
-    "description": "Carga tickets, extrae productos con OCR y divide gastos con amigos",
+    "description": "Carga facturas, extrae productos con OCR y divide gastos con amigos",
     "header": {
       "title": "SplitReceipt"
     }
@@ -11,7 +11,7 @@
     "terms": "Términos de Servicio",
     "contact": "Contáctanos",
     "rights": "Todos los derechos reservados",
-    "description": "Divide 💲tickets fácilmente con 🤼amigos",
+    "description": "Divide 💲facturas fácilmente con 🤼amigos",
     "builtBy": "Creado por"
   },
   "LanguageSwitcher": {
@@ -19,7 +19,7 @@
   },
   "BuyersStep": {
     "title": "¿Qué tripulantes se dividirán la factura?",
-    "description": "Agrega a las personas que dividirán este ticket. Siempre puedes agregar más después.",
+    "description": "Agrega a las personas que dividirán esta factura. Siempre puedes agregar más después.",
     "addPerson": "Agregar persona",
     "placeholder": "Nombre...",
     "peopleCount": "Personas ({count})",
@@ -34,16 +34,16 @@
     "continue": "Continuar"
   },
   "UploadStep": {
-    "title": "Subir Ticket",
-    "description": "Toma una foto o sube una imagen de tu ticket. Extraeremos los productos automáticamente.",
-    "processing": "Procesando ticket...",
+    "title": "Subir Factura",
+    "description": "Toma una foto o sube una imagen de tu factura. Extraeremos los productos automáticamente.",
+    "processing": "Procesando factura...",
     "dropText": "Arrastra una imagen aquí o haz clic para subir",
     "supportsText": "Soporta JPG, PNG y otros formatos de imagen",
     "takePhoto": "Tomar Foto",
     "uploadPdf": "Subir PDF",
     "or": "O",
     "manualEntry": "Ingresar productos manualmente",
-    "loadDemo": "Cargar ticket de demostración",
+    "loadDemo": "Cargar factura de demostración",
     "back": "Volver",
     "skip": "Saltar OCR",
     "errorImage": "Por favor sube un archivo de imagen",
@@ -115,7 +115,7 @@
       "low": "Baja"
     },
     "total": "Total",
-    "originalReceipt": "Ticket Original",
+    "originalReceipt": "Factura Original",
     "back": "Volver",
     "assignItems": "Asignar Productos"
   },

@@ -11,13 +11,13 @@ export function Footer() {
 
         {/* Helper Text */}
         <div className="flex items-center gap-1 order-1 md:order-1">
-          <span>{t('description', { defaultMessage: 'Split 💲receipts easily with 🤼friends' })}</span>
+          <span>{t('description')}</span>
         </div>
 
         {/* Attribution & Links */}
         <div className="flex items-center gap-4 order-2 md:order-2">
           <div className="flex items-center gap-1.5">
-            <span>{t('builtBy', { defaultMessage: 'Built by' })}</span>
+            <span>{t('builtBy')}</span>
             <a
               href="https://linkedin.com/in/codingfer"
               target="_blank"
