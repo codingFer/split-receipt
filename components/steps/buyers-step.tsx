@@ -217,11 +217,6 @@ export function BuyersStep() {
                   </PopoverTrigger>
                   <PopoverContent className="w-64 p-4 rounded-2xl shadow-2xl border-2 border-slate-100 dark:border-slate-800" sideOffset={12}>
                     <div className="space-y-4">
-                      <div className="flex items-center gap-3 border-b pb-3">
-                        <div className="w-8 h-8 rounded-full" style={{ backgroundColor: buyer.color }} />
-                        <h4 className="font-bold text-lg leading-none">{t('customize')}</h4>
-                      </div>
-                      
                       <div className="space-y-3">
                         <div className="space-y-1.5">
                           <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">{t('nameLabel')}</label>
