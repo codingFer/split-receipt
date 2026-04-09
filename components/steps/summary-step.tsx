@@ -1,11 +1,12 @@
 "use client"
 
+import { useState, useEffect } from 'react'
 import { useAppContext } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { 
-  ArrowLeft, 
+import {
+  ArrowLeft,
   Calculator,
   RotateCcw,
   Share2,
@@ -20,21 +21,44 @@ import { useTranslations } from 'next-intl'
 export function SummaryStep() {
   const t = useTranslations('SummaryStep')
   const { currentReceipt, calculateSummaries, setStep, reset, exportState } = useAppContext()
-  
+
+  const [shareUrl, setShareUrl] = useState<string>('')
+
+  useEffect(() => {
+    let active = true
+    const state = exportState()
+    const longUrl = state ? `${window.location.origin}${window.location.pathname}?s=${state}` : window.location.href
+    setShareUrl(longUrl) // fallback immediately
+
+    // URL shorteners reject localhost. Only attempt to shorten if it's a public domain
+    const isLocalhost = longUrl.includes('localhost') || longUrl.includes('127.0.0.1')
+
+    if (state && longUrl.length > 200 && !isLocalhost) {
+      fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (active && data.shorturl) {
+            setShareUrl(data.shorturl)
+          }
+        })
+        .catch(() => { })
+    }
+
+    return () => { active = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // run once when component mounts in this step
+
   if (!currentReceipt) return null
 
   const summaries = calculateSummaries()
   const grandTotal = summaries.reduce((sum, s) => sum + s.total, 0)
 
   const generateShareText = () => {
-    const text = summaries.map(s => 
+    const text = summaries.map(s =>
       `${s.buyer.name}: ${formatCurrency(s.total)}`
     ).join('\n')
-    
-    const state = exportState()
-    const shareUrl = state ? `${window.location.origin}${window.location.pathname}?s=${state}` : window.location.href
 
-    return `${currentReceipt.storeName} - ${currentReceipt.date}\n\n${text}\n\n${t('total')}: ${formatCurrency(grandTotal)}\n\n📄 Ver detalle:\n${shareUrl}`
+    return `${currentReceipt.storeName} - ${currentReceipt.date}\n\n${text}\n\n${t('total')}: ${formatCurrency(grandTotal)}\n\n📄 ${t('viewDetails')}\n${shareUrl || window.location.href}`
   }
 
   const handleShareYoodle = () => {
@@ -82,6 +106,9 @@ export function SummaryStep() {
 
     lines.push(`---`)
     lines.push(`${t('grandTotal')}: ${formatCurrency(grandTotal)}`)
+    lines.push(``)
+    lines.push(`📄 ${t('viewDetails')}`)
+    lines.push(shareUrl || window.location.href)
 
     const blob = new Blob([lines.join('\n')], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
@@ -108,7 +135,7 @@ export function SummaryStep() {
           {summaries.map((summary) => (
             <div key={summary.buyer.id} className="space-y-3">
               <div className="flex items-center gap-3">
-                <div 
+                <div
                   className="w-4 h-4 rounded-full"
                   style={{ backgroundColor: summary.buyer.color }}
                 />
@@ -117,10 +144,10 @@ export function SummaryStep() {
                   {formatCurrency(summary.total)}
                 </span>
               </div>
-              
+
               <div className="pl-7 space-y-1">
                 {summary.items.map(({ item, amount }) => (
-                  <div 
+                  <div
                     key={item.id}
                     className="flex justify-between text-sm text-muted-foreground"
                   >
@@ -132,7 +159,7 @@ export function SummaryStep() {
                   </div>
                 ))}
               </div>
-              
+
               <Separator />
             </div>
           ))}
@@ -147,7 +174,7 @@ export function SummaryStep() {
       </Card>
 
       <div className="flex flex-col gap-3">
-        <Button 
+        <Button
           className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white"
           onClick={handleShareYoodle}
         >
