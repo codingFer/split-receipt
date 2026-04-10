@@ -25,28 +25,10 @@ export function SummaryStep() {
   const [shareUrl, setShareUrl] = useState<string>('')
 
   useEffect(() => {
-    let active = true
     const state = exportState()
     const longUrl = state ? `${window.location.origin}${window.location.pathname}?s=${state}` : window.location.href
-    setShareUrl(longUrl) // fallback immediately
-
-    // URL shorteners reject localhost. Only attempt to shorten if it's a public domain
-    const isLocalhost = longUrl.includes('localhost') || longUrl.includes('127.0.0.1')
-
-    if (state && longUrl.length > 200 && !isLocalhost) {
-      fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`)
-        .then(res => res.json())
-        .then(data => {
-          if (active && data.shorturl) {
-            setShareUrl(data.shorturl)
-          }
-        })
-        .catch(() => { })
-    }
-
-    return () => { active = false }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // run once when component mounts in this step
+    setShareUrl(longUrl)
+  }, [exportState])
 
   if (!currentReceipt) return null
 
@@ -54,11 +36,14 @@ export function SummaryStep() {
   const grandTotal = summaries.reduce((sum, s) => sum + s.total, 0)
 
   const generateShareText = () => {
-    const text = summaries.map(s =>
-      `${s.buyer.name}: ${formatCurrency(s.total)}`
-    ).join('\n')
+    const summaryLines = summaries.map(s => {
+      const itemsText = s.items.map(i => `  • ${i.item.name} (${formatCurrency(i.amount)})`).join('\n')
+      return `👤 ${s.buyer.name}: ${formatCurrency(s.total)}\n${itemsText}`
+    }).join('\n\n')
 
-    return `${currentReceipt.storeName} - ${currentReceipt.date}\n\n${text}\n\n${t('total')}: ${formatCurrency(grandTotal)}\n\n📄 ${t('viewDetails')}\n${shareUrl || window.location.href}`
+    const appUrl = window.location.origin
+
+    return `🧾 ${currentReceipt.storeName} - ${currentReceipt.date}\n\n${summaryLines}\n\n---\n💰 ${t('total')}: ${formatCurrency(grandTotal)}\n\n${t('createdWith')}\n✨ ${t('promo')}\n🔗 ${appUrl}`
   }
 
   const handleShareYoodle = () => {
@@ -107,8 +92,8 @@ export function SummaryStep() {
     lines.push(`---`)
     lines.push(`${t('grandTotal')}: ${formatCurrency(grandTotal)}`)
     lines.push(``)
-    lines.push(`📄 ${t('viewDetails')}`)
-    lines.push(shareUrl || window.location.href)
+    lines.push(t('createdWith'))
+    lines.push(t('promo'))
 
     const blob = new Blob([lines.join('\n')], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)

@@ -130,7 +130,9 @@
     "startNew": "Start New",
     "copied": "Summary copied to clipboard!",
     "exportTitle": "Receipt Split Summary",
-    "viewDetails": "View full details:"
+    "viewDetails": "View full details:",
+    "promo": "Split your receipts easily with SplitReceipt!",
+    "createdWith": "Generated with SplitReceipt 🚀"
   },
   "Metadata": {
     "title": "SplitReceipt - Split Expenses Easily",

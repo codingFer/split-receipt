@@ -130,7 +130,9 @@
     "startNew": "Empezar de nuevo",
     "copied": "Resumen copiado al portapapeles!",
     "exportTitle": "Resumen de División de Recibo",
-    "viewDetails": "Ver detalle:"
+    "viewDetails": "Ver detalle:",
+    "promo": "¡Divide tus facturas fácilmente con SplitReceipt!",
+    "createdWith": "Generado con SplitReceipt 🚀"
   },
   "Metadata": {
     "title": "SplitReceipt - Divide Gastos Fácilmente",
