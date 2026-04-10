@@ -67,9 +67,9 @@ export function AssignStep() {
       const newQty = Math.max(0, current + delta)
 
       // Add/remove from selectedBuyers based on quantity
-      if (newQty > 0 && !selectedBuyers.includes(buyerId)) {
-        setSelectedBuyers(s => [...s, buyerId])
-      } else if (newQty === 0 && selectedBuyers.includes(buyerId)) {
+      if (newQty > 0) {
+        setSelectedBuyers(s => s.includes(buyerId) ? s : [...s, buyerId])
+      } else if (newQty === 0) {
         setSelectedBuyers(s => s.filter(id => id !== buyerId))
       }
 
@@ -261,25 +261,27 @@ export function AssignStep() {
                   </div>
 
                   {/* Quick Assign Buttons */}
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {buyers.map(buyer => (
-                      <button
-                        key={buyer.id}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleQuickAssign(item.id, buyer.id)
-                        }}
-                        className="px-2 py-1 text-xs rounded-md transition-colors hover:opacity-80"
-                        style={{
-                          backgroundColor: `${buyer.color}20`,
-                          color: buyer.color,
-                          border: `1px solid ${buyer.color}40`
-                        }}
-                      >
-                        {buyer.name}
-                      </button>
-                    ))}
-                  </div>
+                  {item.assignments.length === 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {buyers.map(buyer => (
+                        <button
+                          key={buyer.id}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleQuickAssign(item.id, buyer.id)
+                          }}
+                          className="px-2 py-1 text-xs rounded-md transition-colors hover:opacity-80"
+                          style={{
+                            backgroundColor: `${buyer.color}20`,
+                            color: buyer.color,
+                            border: `1px solid ${buyer.color}40`
+                          }}
+                        >
+                          {buyer.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -447,9 +449,9 @@ export function AssignStep() {
                                   value={customAmounts[buyer.id] || ''}
                                   onChange={(e) => {
                                     setCustomAmounts(prev => ({ ...prev, [buyer.id]: e.target.value }))
-                                    if (e.target.value && !selectedBuyers.includes(buyer.id)) {
-                                      setSelectedBuyers(prev => [...prev, buyer.id])
-                                    } else if (!e.target.value && selectedBuyers.includes(buyer.id)) {
+                                    if (e.target.value) {
+                                      setSelectedBuyers(prev => prev.includes(buyer.id) ? prev : [...prev, buyer.id])
+                                    } else {
                                       setSelectedBuyers(prev => prev.filter(id => id !== buyer.id))
                                     }
                                   }}
