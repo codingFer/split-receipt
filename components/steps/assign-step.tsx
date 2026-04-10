@@ -479,28 +479,51 @@ export function AssignStep() {
                   )}
 
                   {/* Summary for custom mode */}
-                  {splitMode === 'custom' && (
-                    <div className="p-3 bg-muted/50 rounded-lg">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">{t('totalAssigned')}</span>
-                        <span className={cn(
-                          "font-mono",
-                          Math.abs(Object.values(customAmounts).reduce((s, v) => s + (parseFloat(v) || 0), 0) - selectedItemData.price) > 0.01
-                            ? "text-destructive"
-                            : "text-primary"
-                        )}>
-                          {formatCurrency(Object.values(customAmounts).reduce((s, v) => s + (parseFloat(v) || 0), 0))} / {formatCurrency(selectedItemData.price)}
-                        </span>
+                  {splitMode === 'custom' && (() => {
+                    const customTotal = Object.values(customAmounts).reduce((s, v) => s + (parseFloat(v) || 0), 0);
+                    const remaining = selectedItemData.price - customTotal;
+                    
+                    return (
+                      <div className="p-3 bg-muted/50 rounded-lg space-y-1">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">{t('totalAssigned')}</span>
+                          <span className={cn(
+                            "font-mono",
+                            customTotal > selectedItemData.price + 0.01
+                              ? "text-destructive font-bold"
+                              : Math.abs(customTotal - selectedItemData.price) > 0.01
+                              ? "text-orange-500"
+                              : "text-primary"
+                          )}>
+                            {formatCurrency(customTotal)} / {formatCurrency(selectedItemData.price)}
+                          </span>
+                        </div>
+                        {customTotal > selectedItemData.price + 0.01 && (
+                          <div className="text-xs text-destructive text-right">
+                            {t('exceedsTotal')}
+                          </div>
+                        )}
+                        {remaining > 0.01 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">{t('remaining')}</span>
+                            <span className="font-mono text-orange-500">
+                              {formatCurrency(remaining)}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
 
                 <Button
                   className="w-full"
                   size="lg"
                   onClick={handleAssign}
-                  disabled={selectedBuyers.length === 0}
+                  disabled={
+                    selectedBuyers.length === 0 || 
+                    (splitMode === 'custom' && Object.values(customAmounts).reduce((s, v) => s + (parseFloat(v) || 0), 0) > selectedItemData.price + 0.01)
+                  }
                 >
                   <Check className="mr-2 h-4 w-4" />
                   {t('assignItem')}

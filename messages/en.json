@@ -92,8 +92,9 @@
     "pricePerUnit": "Price per unit:",
     "totalAssigned": "Total assigned:",
     "assignItem": "Assign Item",
-    "back": "Back",
-    "view Summary": "View Summary"
+    "viewSummary": "View Summary",
+    "exceedsTotal": "Exceeds Total",
+    "remaining": "Remaining:"
   },
   "ReviewStep": {
     "title": "Review Items",

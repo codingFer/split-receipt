@@ -92,8 +92,9 @@
     "pricePerUnit": "Precio por unidad:",
     "totalAssigned": "Total asignado:",
     "assignItem": "Asignar Item",
-    "back": "Atrás",
-    "viewSummary": "Ver Resumen"
+    "viewSummary": "Ver Resumen",
+    "exceedsTotal": "Excede el Total",
+    "remaining": "Faltante:"
   },
   "ReviewStep": {
     "title": "Revisar Productos",
