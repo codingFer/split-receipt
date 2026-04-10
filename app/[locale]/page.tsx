@@ -1,6 +1,5 @@
 "use client"
 
-import { AppProvider } from '@/components/app-provider'
 import { StepIndicator } from '@/components/step-indicator'
 import { BuyersStep } from '@/components/steps/buyers-step'
 import { UploadStep } from '@/components/steps/upload-step'
@@ -77,9 +76,5 @@ function AppContent() {
 }
 
 export default function Home() {
-  return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
-  )
+  return <AppContent />
 }
