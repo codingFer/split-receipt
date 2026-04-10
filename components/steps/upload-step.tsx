@@ -6,7 +6,7 @@ import { processReceiptImage, createManualReceipt } from '@/lib/ocr'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
-import { Upload, Camera, FileText, ArrowLeft, ArrowRight, AlertCircle, FlaskConical } from 'lucide-react'
+import { ImagePlus, Camera, FileUp, FileText, ArrowLeft, ArrowRight, AlertCircle, FlaskConical } from 'lucide-react'
 import { demoBuyers, demoReceipt } from '@/lib/demo-data'
 import { useTranslations } from 'next-intl'
 
@@ -191,8 +191,8 @@ export function UploadStep() {
                   className="w-full"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <Upload className="mr-2 h-4 w-4" />
-                  Subir imagen
+                  <ImagePlus className="mr-2 h-4 w-4" />
+                  {t('uploadImage')}
                 </Button>
 
                 <Button
@@ -200,7 +200,7 @@ export function UploadStep() {
                   className="w-full"
                   onClick={() => pdfInputRef.current?.click()}
                 >
-                  <FileText className="mr-2 h-4 w-4" />
+                  <FileUp className="mr-2 h-4 w-4" />
                   {t('uploadPdf')}
                 </Button>
               </div>
