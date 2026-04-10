@@ -26,32 +26,37 @@ export function UploadStep() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const pdfInputRef = useRef<HTMLInputElement>(null)
 
-  // =============================
-  // 📸 Cámara
-  // =============================
-  const startCamera = async () => {
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" }
-      })
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream
-        await videoRef.current.play()
-      }
-
-      setStream(mediaStream)
-    } catch (err) {
-      console.error("Camera error:", err)
-      setError("No se pudo acceder a la cámara")
-    }
-  }
-
   useEffect(() => {
-    startCamera()
+    let activeStream: MediaStream | null = null
+
+    const initCamera = async () => {
+      try {
+        activeStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false
+        })
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = activeStream
+          // Added catch to prevent unmounted play() promise rejections
+          await videoRef.current.play().catch(e => console.warn('Play interrupted:', e))
+        }
+
+        setStream(activeStream)
+      } catch (err) {
+        console.error("Camera error:", err)
+        setError(t('errorProcess') || "No se pudo acceder a la cámara")
+      }
+    }
+
+    initCamera()
 
     return () => {
-      stream?.getTracks().forEach(track => track.stop())
+      if (activeStream) {
+        activeStream.getTracks().forEach(track => {
+          track.stop()
+        })
+      }
     }
   }, [])
 
