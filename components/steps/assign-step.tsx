@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+
 import { useAppContext } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -29,7 +30,14 @@ type SplitMode = 'full' | 'equal' | 'custom' | 'quantity'
 export function AssignStep() {
   const t = useTranslations('AssignStep')
   const { currentReceipt, buyers, assignItem, setStep } = useAppContext()
-  const [selectedItem, setSelectedItem] = useState<string | null>(null)
+  const assignPanelRef = useRef<HTMLDivElement>(null);
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  // Scroll both the item list and assignment panel into view when a new item is selected (especially on mobile)
+  useEffect(() => {
+    if (selectedItem) {
+      assignPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [selectedItem]);
   const [splitMode, setSplitMode] = useState<SplitMode>('full')
   const [selectedBuyers, setSelectedBuyers] = useState<string[]>([])
   const [customAmounts, setCustomAmounts] = useState<Record<string, string>>({})
@@ -296,7 +304,7 @@ export function AssignStep() {
         </Card>
 
         {/* Assignment Panel */}
-        <Card>
+        <Card ref={assignPanelRef}>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -484,7 +492,7 @@ export function AssignStep() {
                   {splitMode === 'custom' && (() => {
                     const customTotal = Object.values(customAmounts).reduce((s, v) => s + (parseFloat(v) || 0), 0);
                     const remaining = selectedItemData.price - customTotal;
-                    
+
                     return (
                       <div className="p-3 bg-muted/50 rounded-lg space-y-1">
                         <div className="flex justify-between text-sm">
@@ -494,8 +502,8 @@ export function AssignStep() {
                             customTotal > selectedItemData.price + 0.01
                               ? "text-destructive font-bold"
                               : Math.abs(customTotal - selectedItemData.price) > 0.01
-                              ? "text-orange-500"
-                              : "text-primary"
+                                ? "text-orange-500"
+                                : "text-primary"
                           )}>
                             {formatCurrency(customTotal)} / {formatCurrency(selectedItemData.price)}
                           </span>
@@ -523,7 +531,7 @@ export function AssignStep() {
                   size="lg"
                   onClick={handleAssign}
                   disabled={
-                    selectedBuyers.length === 0 || 
+                    selectedBuyers.length === 0 ||
                     (splitMode === 'custom' && Object.values(customAmounts).reduce((s, v) => s + (parseFloat(v) || 0), 0) > selectedItemData.price + 0.01)
                   }
                 >
