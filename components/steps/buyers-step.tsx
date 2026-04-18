@@ -63,6 +63,13 @@ export function BuyersStep() {
     updateBuyer(buyerId, { color })
   }
 
+  const handleContinue = () => {
+    if (newName.trim()) {
+      handleAdd()
+    }
+    setStep('upload')
+  }
+
   // Memoize stars so they don't regenerate while typing
   const stars = useMemo(() => {
     return [...Array(20)].map((_, i) => ({
@@ -303,11 +310,10 @@ export function BuyersStep() {
         </div>
       </div>
 
-      {/* Footer Action */}
       <div className="flex justify-end pt-2">
         <Button
-          onClick={() => setStep('upload')}
-          disabled={buyers.length === 0}
+          onClick={handleContinue}
+          disabled={buyers.length === 0 && !newName.trim()}
           size="lg"
           className="w-full sm:w-auto rounded-2xl px-12 h-14 text-lg font-bold shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all group bg-primary text-white"
         >
