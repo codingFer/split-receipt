@@ -14,6 +14,7 @@ import {
   Edit2,
   Check,
   X,
+  CopyPlus,
   ArrowLeft,
   ArrowRight,
   FileText,
@@ -22,6 +23,7 @@ import {
 import { formatCurrency } from '@/lib/currency'
 import { getProductEmoji } from '@/lib/product-emoji'
 import { useTranslations } from 'next-intl'
+import type { ReceiptItem } from '@/lib/types'
 
 function generateId() {
   return Math.random().toString(36).substring(2, 9)
@@ -29,7 +31,7 @@ function generateId() {
 
 export function ReviewStep() {
   const t = useTranslations('ReviewStep')
-  const { currentReceipt, setReceipt, updateItem, addItem, removeItem, setStep } = useAppContext()
+  const { currentReceipt, setReceipt, updateItem, addItem, duplicateItem, removeItem, setStep } = useAppContext()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState({ name: '', price: '', quantity: '' })
   const [newItem, setNewItem] = useState({ name: '', price: '', quantity: '1' })
@@ -40,7 +42,7 @@ export function ReviewStep() {
     return null
   }
 
-  const handleEditStart = (item: typeof currentReceipt.items[0]) => {
+  const handleEditStart = (item: ReceiptItem) => {
     setEditingId(item.id)
     setEditForm({
       name: item.name,
@@ -204,7 +206,10 @@ export function ReviewStep() {
                           <span className="font-mono font-medium mt-1 sm:mt-0">
                             {formatCurrency(item.price)}
                           </span>
-                          <div>
+                          <div className="flex items-center">
+                            <Button size="icon" variant="ghost" onClick={() => duplicateItem(item.id)} title={t('duplicate')}>
+                              <CopyPlus className="h-4 w-4 text-blue-500" />
+                            </Button>
                             <Button size="icon" variant="ghost" onClick={() => handleEditStart(item)}>
                               <Edit2 className="h-4 w-4" />
                             </Button>

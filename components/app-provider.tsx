@@ -141,6 +141,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  const duplicateItem = useCallback((itemId: string) => {
+    setState(prev => {
+      if (!prev.currentReceipt) return prev
+      const items = prev.currentReceipt.items
+      const index = items.findIndex(i => i.id === itemId)
+      if (index === -1) return prev
+
+      const item = items[index]
+      const newItem: ReceiptItem = {
+        ...item,
+        id: generateId(),
+        name: `${item.name} (copy)`,
+        assignments: []
+      }
+
+      const newItems = [...items]
+      newItems.splice(index + 1, 0, newItem)
+
+      return {
+        ...prev,
+        currentReceipt: {
+          ...prev.currentReceipt,
+          items: newItems
+        }
+      }
+    })
+  }, [])
+
   const removeItem = useCallback((itemId: string) => {
     setState(prev => {
       if (!prev.currentReceipt) return prev
@@ -328,6 +356,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setReceipt,
     updateItem,
     addItem,
+    duplicateItem,
     removeItem,
     assignItem,
     setStep,
@@ -339,7 +368,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     reset,
     exportState,
     importState,
-  }), [state, addBuyer, updateBuyer, removeBuyer, setReceipt, updateItem, addItem, removeItem, assignItem, setStep, setProcessing, startNewSession, resumeSession, deleteSession, calculateSummaries, reset, exportState, importState])
+  }), [state, addBuyer, updateBuyer, removeBuyer, setReceipt, updateItem, addItem, duplicateItem, removeItem, assignItem, setStep, setProcessing, startNewSession, resumeSession, deleteSession, calculateSummaries, reset, exportState, importState])
 
   return (
     <AppContext.Provider value={value}>
