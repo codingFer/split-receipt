@@ -11,6 +11,7 @@ import { Plus, Trash2, Edit2, Check, X, ArrowRight, Users, Sparkles, Settings2 }
 import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { BuyerAvatar } from '@/components/buyer-avatar'
+import { CrewHUD } from '@/components/crew-hud'
 import {
   Popover,
   PopoverContent,
@@ -130,14 +131,7 @@ export function BuyersStep() {
         </AnimatePresence>
 
         {/* Player Count HUD (Top Right) */}
-        <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-20">
-          <div className="bg-black/60 backdrop-blur-md px-3 sm:px-4 py-1.5 rounded-full border border-white/10 flex items-center gap-2">
-             <div className="w-1.5 h-1.5 sm:w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-             <span className="text-white/90 text-[10px] sm:text-xs font-bold tracking-wider uppercase">
-               {t('playersJoined', { count: buyers.length })}
-             </span>
-          </div>
-        </div>
+        <CrewHUD variant="lobby" className="absolute top-4 sm:top-6 right-4 sm:right-6 z-20" />
 
         {/* Characters Container */}
         <motion.div 
