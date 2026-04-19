@@ -1,28 +1,27 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
 import { Footer } from '@/components/footer'
 import '../globals.css'
-import {NextIntlClientProvider} from 'next-intl';
-import {getMessages, getTranslations, setRequestLocale} from 'next-intl/server';
-import {notFound} from 'next/navigation';
-import {routing} from '@/i18n/routing';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+import { routing } from '@/i18n/routing';
 import { ThemeProvider } from "@/components/theme-provider"
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export function generateStaticParams() {
-  return routing.locales.map((locale) => ({locale}));
+  return routing.locales.map((locale) => ({ locale }));
 }
 
 export async function generateMetadata({
   params
 }: {
-  params: Promise<{locale: string}>;
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const {locale} = await params;
-  const t = await getTranslations({locale, namespace: 'Metadata'});
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'Metadata' });
 
   return {
     title: t('title'),
@@ -53,9 +52,9 @@ export default async function RootLayout({
   params
 }: Readonly<{
   children: React.ReactNode;
-  params: Promise<{locale: string}>;
+  params: Promise<{ locale: string }>;
 }>) {
-  const {locale} = await params;
+  const { locale } = await params;
 
   // Ensure that the incoming `locale` is valid
   if (!routing.locales.includes(locale as any)) {
@@ -67,7 +66,7 @@ export default async function RootLayout({
 
   // Providing all messages to the client
   // side is the easiest way to get started
-  const messages = await getMessages({locale});
+  const messages = await getMessages({ locale });
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -83,7 +82,6 @@ export default async function RootLayout({
               {children}
             </main>
             <Footer />
-            <Analytics />
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

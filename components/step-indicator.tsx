@@ -2,7 +2,7 @@
 
 import { useAppContext } from '@/lib/store'
 import { cn } from '@/lib/utils'
-import { Users, Upload, FileText, Split, Calculator } from 'lucide-react'
+import { Users, Upload, FileText, Split, Calculator, CheckCircle } from 'lucide-react'
 import type { AppStep } from '@/lib/types'
 import { useTranslations } from 'next-intl'
 
@@ -58,7 +58,12 @@ export function StepIndicator() {
                 !isClickable && "opacity-50 cursor-not-allowed"
               )}
             >
-              <Icon className="h-4 w-4" />
+              <div className="relative flex items-center justify-center">
+                <Icon className="h-4 w-4" />
+                {isCompleted && (
+                  <CheckCircle className="absolute -bottom-1 -right-1 h-2.5 w-2.5 text-green-500 bg-background rounded-full" strokeWidth={3} />
+                )}
+              </div>
               <span className="hidden sm:inline text-sm font-medium">{t(step.key)}</span>
             </button>
             {index < steps.length - 1 && (
