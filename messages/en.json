@@ -30,7 +30,13 @@
     "lobbyDescription": "Add the crewmates sharing the bill and click them to customize.",
     "playersJoined": "{count} crewmates aboard",
     "waitingForPlayers": "Waiting for crewmates...",
-    "continue": "Continue"
+    "continue": "Continue",
+    "history": "Pending Jobs",
+    "resume": "Resume",
+    "createdAtLabel": "Created",
+    "updatedAtLabel": "Updated",
+    "noHistory": "No pending jobs found",
+    "importData": "Load Data"
   },
   "UploadStep": {
     "title": "Upload Receipt",
@@ -43,7 +49,7 @@
     "uploadPdf": "Upload PDF",
     "or": "Or",
     "manualEntry": "Enter items manually",
-    "load demo receipt": "Load demo receipt",
+    "loadDemo": "Load demo receipt",
     "back": "Back",
     "skip": "Skip OCR",
     "errorImage": "Please upload an image file",
@@ -94,6 +100,7 @@
     "totalAssigned": "Total assigned:",
     "assignItem": "Assign Item",
     "viewSummary": "View Summary",
+    "back": "Back",
     "exceedsTotal": "Exceeds Total",
     "remaining": "Remaining:"
   },
@@ -118,6 +125,7 @@
     "total": "Total",
     "originalReceipt": "Original Receipt",
     "back": "Back",
+    "duplicate": "Duplicate",
     "assignItems": "Assign Items"
   },
   "SummaryStep": {

@@ -30,7 +30,13 @@
     "lobbyDescription": "Agrega a los tripulantes que compartirán la cuenta y haz clic en ellos para personalizarlos.",
     "playersJoined": "{count} tripulantes a bordo",
     "waitingForPlayers": "Esperando a la tripulación...",
-    "continue": "Continuar"
+    "continue": "Continuar",
+    "history": "Trabajos Pendientes",
+    "resume": "Retomar",
+    "createdAtLabel": "Creado",
+    "updatedAtLabel": "Actualizado",
+    "noHistory": "No se encontraron trabajos pendientes",
+    "importData": "Cargar Datos"
   },
   "UploadStep": {
     "title": "Subir Factura",
@@ -94,6 +100,7 @@
     "totalAssigned": "Total asignado:",
     "assignItem": "Asignar Item",
     "viewSummary": "Ver Resumen",
+    "back": "Volver",
     "exceedsTotal": "Excede el Total",
     "remaining": "Faltante:"
   },
@@ -118,6 +125,7 @@
     "total": "Total",
     "originalReceipt": "Factura Original",
     "back": "Volver",
+    "duplicate": "Duplicar",
     "assignItems": "Asignar Productos"
   },
   "SummaryStep": {
