@@ -24,6 +24,7 @@ import { formatCurrency } from '@/lib/currency'
 import { getProductEmoji } from '@/lib/product-emoji'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
+import { motion, AnimatePresence } from 'framer-motion'
 
 type SplitMode = 'full' | 'equal' | 'custom' | 'quantity'
 
@@ -306,19 +307,27 @@ export function AssignStep() {
         {/* Assignment Panel */}
         <Card ref={assignPanelRef}>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  {selectedItemData && <span className="text-xl">{getProductEmoji(selectedItemData.name)}</span>}
-                  {selectedItemData ? selectedItemData.name : t('selectAnItem')}
-                </CardTitle>
-                <CardDescription>
-                  {selectedItemData
-                    ? formatCurrency(selectedItemData.price)
-                    : t('clickListItem')
-                  }
-                </CardDescription>
-              </div>
+            <div className="flex items-center justify-between overflow-hidden">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedItemData ? selectedItemData.id : 'empty'}
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -10, opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <CardTitle className="flex items-center gap-2">
+                    {selectedItemData && <span className="text-xl">{getProductEmoji(selectedItemData.name)}</span>}
+                    {selectedItemData ? selectedItemData.name : t('selectAnItem')}
+                  </CardTitle>
+                  <CardDescription>
+                    {selectedItemData
+                      ? formatCurrency(selectedItemData.price)
+                      : t('clickListItem')
+                    }
+                  </CardDescription>
+                </motion.div>
+              </AnimatePresence>
               {selectedItem && (
                 <Button
                   variant="ghost"
