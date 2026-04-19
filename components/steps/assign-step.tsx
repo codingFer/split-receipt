@@ -318,7 +318,22 @@ export function AssignStep() {
                           {item.name}
                         </span>
                         {item.assignments.length > 0 && (
-                          <Check className="h-4 w-4 text-primary shrink-0" />
+                          <Check
+                            className={cn(
+                              'h-4 w-4 shrink-0',
+                              item.assignments.length > 1 ? 'text-primary' : ''
+                            )}
+                            style={
+                              item.assignments.length === 1
+                                ? {
+                                    color: buyers.find(
+                                      (b) =>
+                                        b.id === item.assignments[0].buyerId
+                                    )?.color,
+                                  }
+                                : {}
+                            }
+                          />
                         )}
                       </div>
                       {getAssignmentBadges(item)}
@@ -329,27 +344,25 @@ export function AssignStep() {
                   </div>
 
                   {/* Quick Assign Buttons */}
-                  {item.assignments.length === 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {buyers.map((buyer) => (
-                        <button
-                          key={buyer.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleQuickAssign(item.id, buyer.id);
-                          }}
-                          className="px-2 py-1 text-xs rounded-md transition-colors hover:opacity-80"
-                          style={{
-                            backgroundColor: `${buyer.color}20`,
-                            color: buyer.color,
-                            border: `1px solid ${buyer.color}40`,
-                          }}
-                        >
-                          {buyer.name}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {buyers.map((buyer) => (
+                      <button
+                        key={buyer.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleQuickAssign(item.id, buyer.id);
+                        }}
+                        className="px-2 py-1 text-xs rounded-md transition-colors hover:opacity-80"
+                        style={{
+                          backgroundColor: `${buyer.color}20`,
+                          color: buyer.color,
+                          border: `1px solid ${buyer.color}40`,
+                        }}
+                      >
+                        {buyer.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
@@ -497,7 +510,10 @@ export function AssignStep() {
                             </div>
                             {(splitMode === 'full' || splitMode === 'equal') &&
                               isSelected && (
-                                <Check className="h-5 w-5 text-primary" />
+                                <Check
+                                  className="h-5 w-5"
+                                  style={{ color: buyer.color }}
+                                />
                               )}
                           </button>
 
