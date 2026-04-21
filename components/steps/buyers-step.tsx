@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { FieldGroup, Field, FieldLabel } from '@/components/ui/field'
 import { Plus, Trash2, Edit2, Check, X, ArrowRight, Users, Sparkles, Settings2, Calendar, Clock, ArrowUpRight, FileUp, Download } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { BuyerAvatar } from '@/components/buyer-avatar'
 import { CrewHUD } from '@/components/crew-hud'
@@ -20,6 +20,21 @@ import {
 
 export function BuyersStep() {
   const t = useTranslations('BuyersStep')
+  const locale = useLocale()
+  
+  const getRelativeTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const diffInSeconds = Math.floor((Date.now() - date.getTime()) / 1000);
+    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+
+    if (diffInSeconds < 60) return rtf.format(-diffInSeconds, 'second');
+    if (diffInSeconds < 3600) return rtf.format(-Math.floor(diffInSeconds / 60), 'minute');
+    if (diffInSeconds < 86400) return rtf.format(-Math.floor(diffInSeconds / 3600), 'hour');
+    if (diffInSeconds < 2592000) return rtf.format(-Math.floor(diffInSeconds / 86400), 'day');
+    if (diffInSeconds < 31536000) return rtf.format(-Math.floor(diffInSeconds / 2592000), 'month');
+    return rtf.format(-Math.floor(diffInSeconds / 31536000), 'year');
+  };
+
   const { 
     buyers, 
     addBuyer, 
@@ -400,7 +415,7 @@ export function BuyersStep() {
                  />
                </div>
                <div className="flex flex-col gap-2 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar pb-10">
-                 {history.map((session) => (
+                 {[...history].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).map((session) => (
                    <div 
                      key={session.id} 
                      className={`group flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-[1.5rem] transition-all border shadow-sm gap-3 ${
@@ -431,7 +446,7 @@ export function BuyersStep() {
                            <div className="flex items-center gap-1">
                              <Clock className="w-3 h-3" />
                              <span className="text-muted-foreground">{t('updatedAtLabel')}:</span>
-                             <span className="text-foreground">{new Date(session.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                             <span className="text-foreground">{getRelativeTime(session.updatedAt)}</span>
                            </div>
                         </div>
                       </div>
