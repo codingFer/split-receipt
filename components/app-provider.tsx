@@ -307,8 +307,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [state.buyers, state.currentReceipt])
 
   const reset = useCallback(() => {
-    setState(initialState)
-    localStorage.removeItem(STORAGE_KEY)
+    setState(prev => ({
+      ...initialState,
+      history: prev.history
+    }))
   }, [])
 
   const exportState = useCallback(() => {
