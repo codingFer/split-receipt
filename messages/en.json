@@ -34,7 +34,7 @@
     "history": "Pending Jobs",
     "resume": "Resume",
     "createdAtLabel": "Created",
-    "updatedAtLabel": "Updated",
+    "updatedAtLabel": "Last updated",
     "noHistory": "No pending jobs found",
     "importData": "Load Data"
   },

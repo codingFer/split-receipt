@@ -34,7 +34,7 @@
     "history": "Trabajos Pendientes",
     "resume": "Retomar",
     "createdAtLabel": "Creado",
-    "updatedAtLabel": "Actualizado",
+    "updatedAtLabel": "Última actualización",
     "noHistory": "No se encontraron trabajos pendientes",
     "importData": "Cargar Datos"
   },

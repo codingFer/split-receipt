@@ -1,23 +1,28 @@
-import type { Receipt, ReceiptItem } from './types'
+import type { Receipt, ReceiptItem, ParsedLine } from './types'
 
 function generateId() {
   return Math.random().toString(36).substring(2, 9)
 }
 
-interface ParsedLine {
+interface WordData {
   text: string
   confidence: number
+  bbox: {
+    x0: number
+    y0: number
+    x1: number
+    y1: number
+  }
 }
 
 export async function processReceiptImage(imageFile: File): Promise<Receipt> {
   let imageUrl = ''
-  
+
   if (imageFile.type === 'application/pdf') {
     try {
       imageUrl = await pdfToDataUrl(imageFile)
     } catch (err) {
       console.error('PDF Conversion Error:', err)
-      // Fallback a recibo manual si falla la conversión
       return {
         id: generateId(),
         storeName: imageFile.name.replace('.pdf', ''),
@@ -35,21 +40,84 @@ export async function processReceiptImage(imageFile: File): Promise<Receipt> {
 
   const { createWorker } = await import('tesseract.js')
   const worker = await createWorker('spa')
-  
+
   try {
     const { data } = await worker.recognize(imageUrl)
-    
-    const lines: ParsedLine[] = data.lines.map(line => ({
-      text: line.text.trim(),
-      confidence: line.confidence / 100
-    }))
-    
+
+    // ────────────────────────────────────────────────
+    // NUEVO: Usar data.words con coordenadas para reconstruir líneas
+    // ────────────────────────────────────────────────
+    const lines = reconstructLinesFromWords(data.words || [])
+
+    console.log('ocr reconstructed lines')
+    console.log(lines.map(line => line.text))
+    console.log('ocr reconstructed lines')
+
     const receipt = parseBolivianReceipt(lines, imageUrl)
-    
     return receipt
   } finally {
     await worker.terminate()
   }
+}
+
+// ────────────────────────────────────────────────
+// RECONSTRUIR LÍNEAS DESDE WORDS CON COORDENADAS
+// ────────────────────────────────────────────────
+function reconstructLinesFromWords(words: WordData[]): ParsedLine[] {
+  if (!words || words.length === 0) return []
+
+  // 1. Calcular altura promedio de palabras para determinar umbral de agrupación
+  const avgHeight = words.reduce((sum, w) => sum + (w.bbox.y1 - w.bbox.y0), 0) / words.length
+  const yThreshold = avgHeight * 0.6  // 60% de altura promedio
+
+  // 2. Agrupar words por líneas horizontales (misma Y)
+  const lineGroups: WordData[][] = []
+
+  for (const word of words) {
+    const wordCenterY = (word.bbox.y0 + word.bbox.y1) / 2
+
+    // Buscar un grupo existente con Y similar
+    let found = false
+    for (const group of lineGroups) {
+      const groupCenterY = (group[0].bbox.y0 + group[0].bbox.y1) / 2
+      if (Math.abs(wordCenterY - groupCenterY) < yThreshold) {
+        group.push(word)
+        found = true
+        break
+      }
+    }
+
+    if (!found) {
+      lineGroups.push([word])
+    }
+  }
+
+  // 3. Ordenar palabras dentro de cada línea por X (izquierda a derecha)
+  //    y construir el texto de la línea
+  const lines: ParsedLine[] = lineGroups.map(group => {
+    // Ordenar por x0
+    group.sort((a, b) => a.bbox.x0 - b.bbox.x0)
+
+    // Calcular confidence promedio
+    const avgConfidence = group.reduce((sum, w) => sum + w.confidence, 0) / group.length
+
+    // Unir palabras con espacios
+    const text = group.map(w => w.text).join(' ')
+
+    return {
+      text: text.trim(),
+      confidence: avgConfidence / 100
+    }
+  })
+
+  // 4. Ordenar líneas por Y (arriba a abajo)
+  lines.sort((a, b) => {
+    const aY = lineGroups.find(g => g.map(w => w.text).join(' ') === a.text)?.[0]?.bbox.y0 || 0
+    const bY = lineGroups.find(g => g.map(w => w.text).join(' ') === b.text)?.[0]?.bbox.y0 || 0
+    return aY - bY
+  })
+
+  return lines
 }
 
 function fileToDataUrl(file: File): Promise<string> {
@@ -59,7 +127,7 @@ function fileToDataUrl(file: File): Promise<string> {
       const img = new Image()
       img.onload = () => {
         const canvas = document.createElement('canvas')
-        const MAX_WIDTH = 2400 // Aumentado para mejor OCR
+        const MAX_WIDTH = 2400
         const MAX_HEIGHT = 2400
         let width = img.width
         let height = img.height
@@ -102,9 +170,9 @@ async function pdfToDataUrl(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer()
   const loadingTask = pdfjs.getDocument({ data: arrayBuffer })
   const pdf = await loadingTask.promise
-  const page = await pdf.getPage(1) // Solo procesamos la primera página
+  const page = await pdf.getPage(1)
 
-  const viewport = page.getViewport({ scale: 2.0 }) // Mayor escala para mejor OCR
+  const viewport = page.getViewport({ scale: 2.0 })
   const canvas = document.createElement('canvas')
   const context = canvas.getContext('2d')
 
@@ -117,105 +185,96 @@ async function pdfToDataUrl(file: File): Promise<string> {
   return canvas.toDataURL('image/jpeg', 0.90)
 }
 
-// Clean item name - remove numeric garbage and extra spaces
+// ────────────────────────────────────────────────
+// CLEANING FUNCTIONS (usando regex correctamente con .replace())
+// ────────────────────────────────────────────────
 function cleanItemName(name: string): string {
   return name
-    // Remove standalone numbers/decimals (like "00000", "7.70000", etc.)
+    // Quitar código de producto al inicio (ej: "23153-")
+    .replace(/^\d{5,}-/, '')
+    // Quitar números sueltos
     .replace(/\b\d+[\.,]?\d*\b/g, '')
-    // Remove X that was part of quantity expression
+    // Quitar X de cantidad
     .replace(/\s*[xX]\s*/g, ' ')
-    // Remove multiple spaces
+    // Quitar múltiples espacios
     .replace(/\s+/g, ' ')
-    // Remove leading/trailing garbage
+    // Quitar basura al inicio/final
     .replace(/^[\s\.,\-:]+|[\s\.,\-:]+$/g, '')
     .trim()
 }
 
-// Check if a line is just numbers (quantity line)
 function isQuantityLine(text: string): boolean {
-  // Lines like "1.00000 X 7.70000" or "00000 X 28.50000"
   const cleaned = text.replace(/[\s\.,]/g, '')
-  // If more than 70% of characters are digits or X, it's a quantity line
   const digitCount = (cleaned.match(/[\dxX]/g) || []).length
-  return digitCount / cleaned.length > 0.7
+  return cleaned.length > 0 && digitCount / cleaned.length > 0.7
 }
 
-// Normalize a price string that may have OCR errors
 function normalizePrice(priceStr: string): number {
-  // Remove any non-digit and non-decimal characters except spaces
   let cleaned = priceStr.replace(/[^\d\s\.,]/g, '').trim()
-  
-  // Handle space in middle of price like "7 70000" -> "7.70000"
-  // or "12 90000" -> "12.90000"
+
+  // "7 70000" -> "7.70000"
   cleaned = cleaned.replace(/(\d)\s+(\d)/g, '$1.$2')
-  
-  // Remove extra spaces
   cleaned = cleaned.replace(/\s+/g, '')
-  
-  // Replace comma with dot
   cleaned = cleaned.replace(',', '.')
-  
-  // If no decimal point, assume last 5 digits are decimals (bolivian receipt format)
-  // e.g., "1290000" -> "12.90000" -> 12.90
+
+  // Sin punto decimal y long > 4: últimos 5 dígitos son decimales
   if (!cleaned.includes('.') && cleaned.length > 4) {
     const intPart = cleaned.slice(0, -5)
     const decPart = cleaned.slice(-5)
     cleaned = `${intPart || '0'}.${decPart}`
   }
-  
+
   const price = parseFloat(cleaned)
-  // Normalize to 2 decimals
   return Math.round(price * 100) / 100
 }
 
-// Extract price from end of line
 function extractPriceFromEnd(text: string): { price: number; name: string } | null {
-  // Clean the text first - remove common OCR artifacts
   let cleaned = text
-    .replace(/[—–-]+/g, ' ')  // Replace dashes with space
-    .replace(/[|!]/g, '')      // Remove pipe and exclamation
-    .replace(/\s+/g, ' ')      // Normalize spaces
+    .replace(/[—–-]+/g, ' ')
+    .replace(/[|!]/g, '')
+    .replace(/\s+/g, ' ')
     .trim()
-  
-  // Multiple patterns to try for bolivian receipts
-  // Pattern 1: "LECHE DE SOYA SABO 7.70000"
-  // Pattern 2: "GALLETA ORED SELEN 1290000" (no decimal)
-  // Pattern 3: "LECHE DE SOYA SABO - 7 70000" (space in price)
-  
-  // Try to find the last number sequence (the price)
-  const priceMatch = cleaned.match(/^(.+?)\s+(\d[\d\s\.,]*\d)\s*$/)
+
+  // Quitar guión al final de precio: "8.90-" -> "8.90"
+  cleaned = cleaned.replace(/(\d[\d\.,]+)\s*[-—]\s*$/, '$1')
+
+  // Patrón principal: nombre + precio al final
+  const priceMatch = cleaned.match(/^(.*?)\s+(\d[\d\s\.,]*\d)\s*$/)
   if (priceMatch) {
     const name = cleanItemName(priceMatch[1])
     const price = normalizePrice(priceMatch[2])
-    if (name.length > 1 && price > 0 && price < 5000) {
+    if (name.length > 1 && price > 0 && price < 5000 && /[a-zA-Z]/.test(name)) {
       return { price, name }
     }
   }
-  
-  // Fallback: just find any number at the end
-  const fallbackMatch = cleaned.match(/^(.+?)\s+(\d+)\s*$/)
+
+  // Fallback: cualquier número al final
+  const fallbackMatch = cleaned.match(/^(.*?)\s+(\d+)\s*$/)
   if (fallbackMatch) {
     const name = cleanItemName(fallbackMatch[1])
     const price = normalizePrice(fallbackMatch[2])
-    if (name.length > 1 && price > 0 && price < 5000) {
+    if (name.length > 1 && price > 0 && price < 5000 && /[a-zA-Z]/.test(name)) {
       return { price, name }
     }
   }
-  
+
   return null
 }
 
+// ────────────────────────────────────────────────
+// MAIN PARSER
+// ────────────────────────────────────────────────
 function parseBolivianReceipt(lines: ParsedLine[], imageUrl: string): Receipt {
   const items: ReceiptItem[] = []
   let storeName = ''
   let date = ''
   let total = 0
 
-  const datePattern = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/
-  const datePatternYearFirst = /(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/
-  const totalPattern = /total\s*a?\s*pagar|total\s*bs\.?/i
-  
-  // Lines to completely skip
+  const datePattern = /(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})/
+  const datePatternYearFirst = /(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/
+  const totalPattern = /total\s*a?\s*pagar|total\s*bs\.?|monto\s*a\s*pagar/i
+
+  // Líneas a saltar (expandido)
   const skipPatterns = [
     /^cant\.?\s*p\.?\s*unt/i,
     /detalle/i,
@@ -232,22 +291,30 @@ function parseBolivianReceipt(lines: ParsedLine[], imageUrl: string): Receipt {
     /cj:/i,
     /^\*+/,
     /^-+$/,
-    /^\s*$/
+    /^\s*$/,
+    /unidad de medida/i,
+    /descuento\s*bs/i,
+    /monto\s*gift\s*card/i,
+    /importe\s*base\s*crédito/i,
+    /son:/i,
+    /ley\s*n°453/i,
+    /este documento es la representación/i,
   ]
 
-  // First pass: find store name and date
+  // ── First pass: store name y fecha ──
   for (let i = 0; i < Math.min(lines.length, 15); i++) {
     const text = lines[i].text.trim()
-    
-    // Store name - look for prominent text in first lines
+
     if (i < 5 && !storeName && text.length > 3) {
       const cleaned = text.replace(/\*+/g, '').trim()
-      if (cleaned.length > 2 && !/factura|cr[ée]dito/i.test(cleaned) && !/^\d/.test(cleaned) && !skipPatterns.some(p => p.test(cleaned))) {
+      if (cleaned.length > 2 &&
+          !/factura|cr[ée]dito|sucursal|nit|derecho/i.test(cleaned) &&
+          !/^\d/.test(cleaned) &&
+          !skipPatterns.some(p => p.test(cleaned))) {
         storeName = cleaned
       }
     }
-    
-    // Date
+
     const dateMatch = text.match(datePattern) || text.match(datePatternYearFirst)
     if (dateMatch && !date) {
       if (dateMatch[1].length === 4) {
@@ -260,37 +327,39 @@ function parseBolivianReceipt(lines: ParsedLine[], imageUrl: string): Receipt {
 
   let pendingItemName = ''
 
-  // Second pass: extract items
+  // ── Second pass: extract items ──
   for (let i = 0; i < lines.length; i++) {
     const { text, confidence } = lines[i]
-    
-    if (!text) {
-      continue
-    }
 
-    // Check for total FIRST
-    if (totalPattern.test(text)) {
-      const priceMatch = text.match(/(\d+[\.,]\d{2})\s*$/)
+    if (!text) continue
+
+    const trimmed = text.trim()
+
+    // Detectar TOTAL primero
+    if (totalPattern.test(trimmed)) {
+      const priceMatch = trimmed.match(/(\d+[\.,]\d{2})\s*[-—]?\s*$/)
       if (priceMatch) {
         total = parseFloat(priceMatch[1].replace(',', '.'))
       }
       continue
     }
 
-    if (skipPatterns.some(p => p.test(text))) {
+    // Saltar líneas no deseadas
+    if (skipPatterns.some(p => p.test(trimmed))) {
       continue
     }
 
-    // Skip quantity lines or extract price if pendingItemName exists
-    if (isQuantityLine(text) || /\b\d+[\.,]\d{2}\s*[xX]\s*\d+[\.,]\d{2}/i.test(text)) {
+    // ── Líneas de cantidad (con o sin precio integrado)
+    if (isQuantityLine(trimmed) || /\b\d+[\.,]\d{2}\s*[xX]\s*\d+[\.,]\d{2}/i.test(trimmed)) {
+      // Si hay pendingItemName, intentar extraer precio de esta línea
       if (pendingItemName) {
-        const priceMatch = text.match(/(\d+[\.,]\d{2})\s*$/)
+        const priceMatch = trimmed.match(/(\d+[\.,]\d{2})\s*[-—]?\s*$/)
         if (priceMatch) {
           const price = parseFloat(priceMatch[1].replace(',', '.'))
           if (price > 0 && price < 5000) {
             items.push({
               id: generateId(),
-              name: pendingItemName,
+              name: cleanItemName(pendingItemName),
               quantity: 1,
               price,
               confidence,
@@ -304,10 +373,9 @@ function parseBolivianReceipt(lines: ParsedLine[], imageUrl: string): Receipt {
       continue
     }
 
-    // Try to extract item from this line (NAME + PRICE format)
-    const extracted = extractPriceFromEnd(text)
+    // ── Intentar extraer item completo (nombre + precio en misma línea)
+    const extracted = extractPriceFromEnd(trimmed)
     if (extracted && extracted.name.length > 1 && extracted.price > 0 && extracted.price < 5000) {
-      // Make sure name has at least one letter (not just numbers)
       if (/[a-zA-Z]/.test(extracted.name)) {
         items.push({
           id: generateId(),
@@ -322,17 +390,17 @@ function parseBolivianReceipt(lines: ParsedLine[], imageUrl: string): Receipt {
       continue
     }
 
-    // If we're here, it might be an item name awaiting its price on the next line
-    const lettersMatch = text.match(/[a-zA-Z]/g)
+    // ── Podría ser nombre de producto esperando precio en siguiente línea
+    const lettersMatch = trimmed.match(/[a-zA-Z]/g)
     if (lettersMatch && lettersMatch.length > 3) {
-       // Ignore info lines
-       if (!/^(NIT|COD\.?CLIENTE|CUF|NOMBRE|RAZ[OÓ]N|N[O°]?FACTURA)/i.test(text)) {
-           pendingItemName = text.replace(/^[\d\s\-]+/, '').trim()
-       }
+      if (!/^(NIT|COD\.?CLIENTE|CUF|NOMBRE|RAZ[OÓ]N|N[O°]?FACTURA|CLIENTE)/i.test(trimmed)) {
+        // Limpiar código de producto si existe
+        pendingItemName = trimmed.replace(/^\d{5,}-/, '').trim()
+      }
     }
   }
 
-  // Calculate total if not found
+  // ── Calcular total si no se encontró ──
   if (total === 0) {
     total = items.reduce((sum, item) => sum + item.price, 0)
   }
