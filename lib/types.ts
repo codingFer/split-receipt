@@ -3,6 +3,7 @@ export interface Buyer {
   name: string
   color: string
   avatar?: string
+  hasPaid?: boolean
 }
 
 export interface ReceiptItem {

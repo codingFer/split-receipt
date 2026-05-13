@@ -5,6 +5,7 @@ import { useAppContext } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/ui/badge'
 import {
   ArrowLeft,
   Calculator,
@@ -12,7 +13,9 @@ import {
   Share2,
   Download,
   MessageCircle,
-  Copy
+  Copy,
+  CheckCircle2,
+  Circle
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/currency'
 import { getProductEmoji } from '@/lib/product-emoji'
@@ -20,7 +23,7 @@ import { useTranslations } from 'next-intl'
 
 export function SummaryStep() {
   const t = useTranslations('SummaryStep')
-  const { currentReceipt, calculateSummaries, setStep, reset, exportState } = useAppContext()
+  const { currentReceipt, calculateSummaries, setStep, reset, exportState, updateBuyer } = useAppContext()
 
   const [shareUrl, setShareUrl] = useState<string>('')
 
@@ -38,7 +41,8 @@ export function SummaryStep() {
   const generateShareText = () => {
     const summaryLines = summaries.map(s => {
       const itemsText = s.items.map(i => `  • ${i.item.name} (${formatCurrency(i.amount)})`).join('\n')
-      return `👤 ${s.buyer.name}: ${formatCurrency(s.total)}\n${itemsText}`
+      const statusText = s.buyer.hasPaid ? ` [${t('paid')}]` : ''
+      return `👤 ${s.buyer.name}${statusText}: ${formatCurrency(s.total)}\n${itemsText}`
     }).join('\n\n')
 
     const appUrl = window.location.origin
@@ -82,7 +86,8 @@ export function SummaryStep() {
     ]
 
     summaries.forEach(summary => {
-      lines.push(`${summary.buyer.name}: ${formatCurrency(summary.total)}`)
+      const statusText = summary.buyer.hasPaid ? ` [${t('paid')}]` : ''
+      lines.push(`${summary.buyer.name}${statusText}: ${formatCurrency(summary.total)}`)
       summary.items.forEach(({ item, amount }) => {
         lines.push(`  - ${item.name}: ${formatCurrency(amount)}`)
       })
@@ -121,10 +126,27 @@ export function SummaryStep() {
             <div key={summary.buyer.id} className="space-y-3">
               <div className="flex items-center gap-3">
                 <div
-                  className="w-4 h-4 rounded-full"
+                  className="w-4 h-4 rounded-full shrink-0"
                   style={{ backgroundColor: summary.buyer.color }}
                 />
                 <span className="font-semibold text-lg">{summary.buyer.name}</span>
+                <button
+                  onClick={() => updateBuyer(summary.buyer.id, { hasPaid: !summary.buyer.hasPaid })}
+                  className="flex items-center transition-opacity hover:opacity-80"
+                  title={summary.buyer.hasPaid ? t('markAsUnpaid') : t('markAsPaid')}
+                >
+                  {summary.buyer.hasPaid ? (
+                    <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600 cursor-pointer">
+                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                      {t('paid')}
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-muted-foreground cursor-pointer">
+                      <Circle className="w-3 h-3 mr-1" />
+                      {t('unpaid')}
+                    </Badge>
+                  )}
+                </button>
                 <span className="ml-auto text-xl font-bold font-mono">
                   {formatCurrency(summary.total)}
                 </span>

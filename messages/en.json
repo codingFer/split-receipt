@@ -36,7 +36,9 @@
     "createdAtLabel": "Created",
     "updatedAtLabel": "Last updated",
     "noHistory": "No pending jobs found",
-    "importData": "Load Data"
+    "importData": "Load Data",
+    "pendingPayments": "{count} pending ({amount})",
+    "allPaid": "All paid"
   },
   "UploadStep": {
     "title": "Upload Receipt",
@@ -142,7 +144,11 @@
     "exportTitle": "Receipt Split Summary",
     "viewDetails": "View full details:",
     "promo": "Split your receipts easily with SplitReceipt!",
-    "createdWith": "Generated with SplitReceipt 🚀"
+    "createdWith": "Generated with SplitReceipt 🚀",
+    "paid": "Paid",
+    "unpaid": "Pending",
+    "markAsPaid": "Mark as Paid",
+    "markAsUnpaid": "Mark as Pending"
   },
   "Metadata": {
     "title": "SplitReceipt - Split Expenses Easily",

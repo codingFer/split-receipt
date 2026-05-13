@@ -12,6 +12,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { motion, AnimatePresence } from 'framer-motion'
 import { BuyerAvatar } from '@/components/buyer-avatar'
 import { CrewHUD } from '@/components/crew-hud'
+import { formatCurrency } from '@/lib/currency'
 import {
   Popover,
   PopoverContent,
@@ -33,6 +34,27 @@ export function BuyersStep() {
     if (diffInSeconds < 2592000) return rtf.format(-Math.floor(diffInSeconds / 86400), 'day');
     if (diffInSeconds < 31536000) return rtf.format(-Math.floor(diffInSeconds / 2592000), 'month');
     return rtf.format(-Math.floor(diffInSeconds / 31536000), 'year');
+  };
+
+  const getPendingInfo = (session: any) => {
+    if (!session.receipt || !session.receipt.items || session.receipt.items.length === 0) return null;
+    
+    const buyerTotals: Record<string, number> = {};
+    session.receipt.items.forEach((item: any) => {
+      if (!item.assignments) return;
+      item.assignments.forEach((a: any) => {
+        buyerTotals[a.buyerId] = (buyerTotals[a.buyerId] || 0) + a.amount;
+      });
+    });
+
+    const pendingBuyers = session.buyers.filter((b: any) => !b.hasPaid && (buyerTotals[b.id] || 0) > 0);
+    
+    const amount = pendingBuyers.reduce((sum: number, b: any) => sum + (buyerTotals[b.id] || 0), 0);
+    const totalAmount = session.buyers.reduce((sum: number, b: any) => sum + (buyerTotals[b.id] || 0), 0);
+    
+    if (totalAmount === 0) return null;
+    
+    return { count: pendingBuyers.length, amount };
   };
 
   const { 
@@ -448,6 +470,19 @@ export function BuyersStep() {
                              <span className="text-muted-foreground">{t('updatedAtLabel')}:</span>
                              <span className="text-foreground">{getRelativeTime(session.updatedAt)}</span>
                            </div>
+                           {(() => {
+                             const pending = getPendingInfo(session);
+                             if (!pending) return null;
+                             return (
+                               <div className={`flex items-center gap-1 ${pending.count > 0 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                                 <span className="font-bold">
+                                   {pending.count > 0 
+                                     ? t('pendingPayments', { count: pending.count, amount: formatCurrency(pending.amount) })
+                                     : t('allPaid')}
+                                 </span>
+                               </div>
+                             );
+                           })()}
                         </div>
                       </div>
                       <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity justify-end border-t sm:border-t-0 pt-2 sm:pt-0 mt-1 sm:mt-0">

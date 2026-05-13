@@ -36,7 +36,9 @@
     "createdAtLabel": "Creado",
     "updatedAtLabel": "Última actualización",
     "noHistory": "No se encontraron trabajos pendientes",
-    "importData": "Cargar Datos"
+    "importData": "Cargar Datos",
+    "pendingPayments": "{count} pendientes ({amount})",
+    "allPaid": "Todo pagado"
   },
   "UploadStep": {
     "title": "Subir Factura",
@@ -142,7 +144,11 @@
     "exportTitle": "Resumen de División de Recibo",
     "viewDetails": "Ver detalle:",
     "promo": "¡Divide tus facturas fácilmente con SplitReceipt!",
-    "createdWith": "Generado con SplitReceipt 🚀"
+    "createdWith": "Generado con SplitReceipt 🚀",
+    "paid": "Pagado",
+    "unpaid": "Pendiente",
+    "markAsPaid": "Marcar como Pagado",
+    "markAsUnpaid": "Marcar como Pendiente"
   },
   "Metadata": {
     "title": "SplitReceipt - Divide Gastos Fácilmente",
