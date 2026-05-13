@@ -56,7 +56,14 @@
     "skip": "Saltar OCR",
     "errorImage": "Por favor sube un archivo de imagen",
     "errorPdf": "Error al procesar el PDF",
-    "errorProcess": "Error al procesar la imagen. Puedes intentar de nuevo o ingresar los productos manualmente."
+    "errorProcess": "Error al procesar la imagen. Puedes intentar de nuevo o ingresar los productos manualmente.",
+    "siatTitle": "Importar de SIAT",
+    "siatButton": "Importar SIAT",
+    "siatStep1": "1. Abre el portal SIAT o escanea el QR de tu factura.",
+    "siatStep2": "2. Si usas celular, cambia a 'Sitio de escritorio'.",
+    "siatStep3": "3. Selecciona todo el texto, cópialo y pégalo abajo.",
+    "siatPastePlaceholder": "Pega el texto de la factura SIAT aquí...",
+    "siatProcess": "Procesar Factura"
   },
   "StepIndicator": {
     "buyers": "Personas",

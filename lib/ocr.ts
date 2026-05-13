@@ -430,3 +430,77 @@ export function createManualReceipt(): Receipt {
     createdAt: new Date()
   }
 }
+
+export function parseSiatReceipt(text: string): Receipt {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  let storeName = '';
+  let date = '';
+  let total = 0;
+  const items: ReceiptItem[] = [];
+
+  let inProductsSection = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (line === 'Razón Social:' && i + 1 < lines.length) {
+      storeName = lines[i + 1];
+    } else if (line === 'Fecha Emisión:' && i + 1 < lines.length) {
+      date = lines[i + 1].split(' ')[0];
+    } else if (line === 'Monto Total:' && i + 1 < lines.length) {
+      total = parseFloat(lines[i + 1].replace(/[^\d\.]/g, ''));
+    } else if (line.startsWith('Código\tDescripción') || line.startsWith('Código Descripción')) {
+      inProductsSection = true;
+      continue;
+    } else if (line === 'Detalle de Productos') {
+      // next line might be the header
+    } else if (inProductsSection) {
+      // Try tab separation first
+      const parts = line.split('\t');
+      if (parts.length >= 5) {
+        const name = parts[1].trim();
+        const quantity = parseInt(parts[2].replace(/[^\d]/g, ''), 10) || 1;
+        const price = parseFloat(parts[4].replace(/[^\d\.]/g, '')) || 0;
+        
+        if (name && price > 0) {
+          items.push({
+            id: generateId(),
+            name,
+            quantity,
+            price,
+            confidence: 1,
+            assignments: []
+          });
+        }
+      } else {
+        // Space separated fallback if copy-paste lost tabs
+        const match = line.match(/^(\S+)\s+(.*?)\s+(\d+)\s+([\d\.]+)\s*Bs\.?\s+([\d\.]+)\s*Bs\.?$/i);
+        if (match) {
+          const name = match[2].trim();
+          const quantity = parseInt(match[3], 10);
+          const price = parseFloat(match[5]);
+          items.push({
+            id: generateId(),
+            name,
+            quantity,
+            price,
+            confidence: 1,
+            assignments: []
+          });
+        }
+      }
+    }
+  }
+
+  return {
+    id: generateId(),
+    storeName: storeName || 'SIAT Factura',
+    date: date || new Date().toLocaleDateString(),
+    items,
+    subtotal: total,
+    tax: 0,
+    total,
+    createdAt: new Date()
+  };
+}
+

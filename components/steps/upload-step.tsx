@@ -2,8 +2,9 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAppContext } from '@/lib/store';
-import { processReceiptImage, createManualReceipt } from '@/lib/ocr';
+import { processReceiptImage, createManualReceipt, parseSiatReceipt } from '@/lib/ocr';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Card,
   CardContent,
@@ -41,6 +42,9 @@ export function UploadStep() {
   // 📂 fallback upload
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
+
+  const [showSiatMode, setShowSiatMode] = useState(false);
+  const [siatText, setSiatText] = useState('');
 
   useEffect(() => {
     let activeStream: MediaStream | null = null;
@@ -157,6 +161,22 @@ export function UploadStep() {
     setStep('review');
   };
 
+  const handleSiatProcess = () => {
+    if (!siatText.trim()) return;
+    try {
+      setProcessing(true);
+      setError(null);
+      const receipt = parseSiatReceipt(siatText);
+      setReceipt(receipt);
+      setStep('review');
+    } catch (err) {
+      console.error('SIAT Parse Error:', err);
+      setError(t('errorProcess'));
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const handleLoadDemo = () => {
     if (buyers.length === 0) {
       demoBuyers.forEach((buyer) => addBuyer(buyer));
@@ -184,7 +204,44 @@ export function UploadStep() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {isProcessing ? (
+          {showSiatMode ? (
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <div className="p-4 bg-primary/5 rounded-xl space-y-2 text-sm border border-primary/20">
+                <p className="font-bold flex items-center gap-2">
+                  <span className="text-base">🇧🇴</span>
+                  <span className="bg-gradient-to-r from-red-600 from-[33.3%] via-yellow-500 via-[33.3%] via-[66.6%] to-green-600 to-[66.6%] bg-clip-text text-transparent">
+                    {t('siatTitle')}
+                  </span>
+                </p>
+                <ol className="list-none space-y-1 text-muted-foreground font-medium">
+                  <li>{t('siatStep1')}</li>
+                  <li>{t('siatStep2')}</li>
+                  <li>{t('siatStep3')}</li>
+                </ol>
+              </div>
+              <Textarea
+                placeholder={t('siatPastePlaceholder')}
+                className="min-h-[160px] font-mono text-xs custom-scrollbar resize-none border-primary/20 focus-visible:ring-primary/30"
+                value={siatText}
+                onChange={(e) => setSiatText(e.target.value)}
+              />
+              <div className="flex gap-3 pt-2">
+                <Button variant="outline" className="flex-1" onClick={() => setShowSiatMode(false)}>
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  {t('back')}
+                </Button>
+                <Button className="flex-1 shadow-lg shadow-primary/20" onClick={handleSiatProcess} disabled={!siatText.trim() || isProcessing}>
+                  {t('siatProcess')}
+                </Button>
+              </div>
+              {error && (
+                <div className="flex gap-2 p-3 bg-destructive/10 text-destructive rounded-lg mt-4 animate-in fade-in">
+                  <AlertCircle className="h-5 w-5 shrink-0" />
+                  <p className="text-sm font-medium">{error}</p>
+                </div>
+              )}
+            </div>
+          ) : isProcessing ? (
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
               <Spinner className="h-8 w-8" />
               <p>{t('processing')}</p>
@@ -249,15 +306,24 @@ export function UploadStep() {
                 </div>
               )}
 
-              <Button variant="outline" onClick={handleManualEntry}>
-                <FileText className="mr-2 h-4 w-4" />
-                {t('manualEntry')}
-              </Button>
+              <div className="flex flex-col gap-3">
+                <Button variant="outline" className="w-full h-12 justify-center hover:bg-red-50/30 border-red-100 dark:border-red-900/20" onClick={() => setShowSiatMode(true)}>
+                  <span className="mr-3 text-xl">🇧🇴</span>
+                  <span className="bg-gradient-to-r from-red-600 from-[33.3%] via-yellow-500 via-[33.3%] via-[66.6%] to-green-600 to-[66.6%] bg-clip-text text-transparent font-bold uppercase tracking-tight">
+                    {t('siatButton')}
+                  </span>
+                </Button>
 
-              <Button variant="secondary" onClick={handleLoadDemo}>
-                <FlaskConical className="mr-2 h-4 w-4" />
-                {t('loadDemo')}
-              </Button>
+                <Button variant="outline" className="w-full h-12 justify-center" onClick={handleManualEntry}>
+                  <FileText className="mr-3 h-5 w-5 text-muted-foreground" />
+                  <span className="font-bold uppercase tracking-tight text-muted-foreground">{t('manualEntry')}</span>
+                </Button>
+                
+                <Button variant="secondary" className="w-full h-12 justify-center" onClick={handleLoadDemo}>
+                  <FlaskConical className="mr-3 h-5 w-5 text-muted-foreground" />
+                  <span className="font-bold uppercase tracking-tight text-muted-foreground">{t('loadDemo')}</span>
+                </Button>
+              </div>
             </>
           )}
         </CardContent>

@@ -56,7 +56,14 @@
     "skip": "Skip OCR",
     "errorImage": "Please upload an image file",
     "errorPdf": "Error processing PDF",
-    "errorProcess": "Failed to process image. You can try again or enter items manually."
+    "errorProcess": "Failed to process image. You can try again or enter items manually.",
+    "siatTitle": "Import from SIAT",
+    "siatButton": "Import SIAT",
+    "siatStep1": "1. Open the SIAT portal or scan your receipt's QR.",
+    "siatStep2": "2. If using a phone, switch to 'Desktop mode'.",
+    "siatStep3": "3. Select all text, copy it, and paste it below.",
+    "siatPastePlaceholder": "Paste the SIAT receipt text here...",
+    "siatProcess": "Process Receipt"
   },
   "StepIndicator": {
     "buyers": "People",
