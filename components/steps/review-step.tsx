@@ -18,12 +18,15 @@ import {
   ArrowLeft,
   ArrowRight,
   FileText,
-  AlertTriangle
+  AlertTriangle,
+  Pencil
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/currency'
 import { getProductEmoji } from '@/lib/product-emoji'
 import { useTranslations } from 'next-intl'
 import type { ReceiptItem } from '@/lib/types'
+import { ReceiptAnnotator } from '@/components/receipt-annotator'
+import { motion, AnimatePresence } from 'framer-motion'
 
 function generateId() {
   return Math.random().toString(36).substring(2, 9)
@@ -35,6 +38,7 @@ export function ReviewStep() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState({ name: '', price: '', quantity: '' })
   const [newItem, setNewItem] = useState({ name: '', price: '', quantity: '1' })
+  const [showAnnotator, setShowAnnotator] = useState(false)
 
   // Create a receipt if none exists
   if (!currentReceipt) {
@@ -293,15 +297,59 @@ export function ReviewStep() {
 
       {currentReceipt.imageUrl && (
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">{t('originalReceipt')}</CardTitle>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm">{t('originalReceipt')}</CardTitle>
+              <Button
+                size="sm"
+                variant={showAnnotator ? 'default' : 'outline'}
+                className="h-8 px-3 rounded-xl gap-1.5 text-xs font-bold"
+                onClick={() => setShowAnnotator((v) => !v)}
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                {showAnnotator ? t('hideAnnotator') : t('drawToIdentify')}
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent>
-            <img
-              src={currentReceipt.imageUrl}
-              alt="Receipt"
-              className="max-h-64 mx-auto rounded-lg"
-            />
+          <CardContent className="space-y-4">
+            <AnimatePresence mode="wait">
+              {showAnnotator ? (
+                <motion.div
+                  key="annotator"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="overflow-hidden"
+                >
+                  <ReceiptAnnotator
+                    imageUrl={currentReceipt.imageUrl}
+                    onClose={() => setShowAnnotator(false)}
+                    onAddItems={(items) => {
+                      items.forEach((item) =>
+                        addItem({
+                          name: item.name,
+                          price: item.price,
+                          quantity: item.quantity,
+                          confidence: 1,
+                          assignments: [],
+                        })
+                      )
+                    }}
+                  />
+                </motion.div>
+              ) : (
+                <motion.img
+                  key="preview"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  src={currentReceipt.imageUrl}
+                  alt="Receipt"
+                  className="max-h-64 mx-auto rounded-lg"
+                />
+              )}
+            </AnimatePresence>
           </CardContent>
         </Card>
       )}

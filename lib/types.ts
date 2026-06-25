@@ -33,6 +33,11 @@ export interface Receipt {
   createdAt: Date
 }
 
+export interface ParsedLine {
+  text: string
+  confidence: number // 0-1
+}
+
 export interface BuyerSummary {
   buyer: Buyer
   items: { item: ReceiptItem; amount: number }[]

@@ -140,7 +140,9 @@
     "originalReceipt": "Original Receipt",
     "back": "Back",
     "duplicate": "Duplicate",
-    "assignItems": "Assign Items"
+    "assignItems": "Assign Items",
+    "drawToIdentify": "✏️ Draw items",
+    "hideAnnotator": "Hide editor"
   },
   "SummaryStep": {
     "title": "Summary",
@@ -165,6 +167,25 @@
   "Metadata": {
     "title": "SplitReceipt - Split Expenses Easily",
     "description": "Upload receipts, extract items with OCR, and split expenses between friends"
+  },
+  "Annotator": {
+    "loading": "Loading image...",
+    "toolbarLabel": "Drawing tool",
+    "draw": "Draw",
+    "erase": "Erase",
+    "undo": "Undo",
+    "clearAll": "Clear all",
+    "instructionDraw": "Draw a rectangle over each item on the receipt that wasn't recognized correctly.",
+    "instructionErase": "Click on a box to remove it.",
+    "labelItem": "Identify item",
+    "itemName": "Item name",
+    "itemNamePlaceholder": "e.g. Burger",
+    "itemPrice": "Total price",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "confirmedItems": "{count} items identified",
+    "addItems": "Add {count} to receipt",
+    "closeAnnotator": "Close editor"
   },
   "ThemeSwitcher": {
     "label": "Toggle theme",

@@ -140,7 +140,9 @@
     "originalReceipt": "Factura Original",
     "back": "Volver",
     "duplicate": "Duplicar",
-    "assignItems": "Asignar Productos"
+    "assignItems": "Asignar Productos",
+    "drawToIdentify": "✏️ Dibujar items",
+    "hideAnnotator": "Ocultar editor"
   },
   "SummaryStep": {
     "title": "Resumen",
@@ -165,6 +167,25 @@
   "Metadata": {
     "title": "SplitReceipt - Divide Gastos Fácilmente",
     "description": "Carga tickets, extrae productos con OCR y divide gastos con amigos"
+  },
+  "Annotator": {
+    "loading": "Cargando imagen...",
+    "toolbarLabel": "Herramienta de dibujo",
+    "draw": "Dibujar",
+    "erase": "Borrar",
+    "undo": "Deshacer",
+    "clearAll": "Limpiar todo",
+    "instructionDraw": "Dibuja un rectángulo sobre cada producto de la factura que no se haya reconocido bien.",
+    "instructionErase": "Haz clic sobre una caja para eliminarla.",
+    "labelItem": "Identificar producto",
+    "itemName": "Nombre del producto",
+    "itemNamePlaceholder": "Ej: Hamburguesa",
+    "itemPrice": "Precio total",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "confirmedItems": "{count} productos identificados",
+    "addItems": "Agregar {count} al recibo",
+    "closeAnnotator": "Cerrar editor"
   },
   "ThemeSwitcher": {
     "label": "Cambiar tema",
