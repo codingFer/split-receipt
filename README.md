@@ -8,11 +8,11 @@ SplitReceipt is a modern, responsive web application designed to help friends ef
 - **👥 Flexible Group Management**: Easily add and manage people participating in the split.
 - **⚖️ Precise Item Assignment**: Assign individual items to one or more people, handling complex scenarios (like sharing an appetizer).
 - **📋 Step-by-Step Flow**:
-    1. **Buyers**: Add the people involved.
-    2. **Upload**: Provide the receipt image and parse it.
-    3. **Assign**: Match items to their respective buyers.
-    4. **Review**: Check the breakdown before finalizing.
-    5. **Summary**: A beautiful final summary of who owes what.
+  1. **Buyers**: Add the people involved.
+  2. **Upload**: Provide the receipt image and parse it.
+  3. **Assign**: Match items to their respective buyers.
+  4. **Review**: Check the breakdown before finalizing.
+  5. **Summary**: A beautiful final summary of who owes what.
 - **🎨 Premium UI/UX**: Built with a sleek, dark-themed design using Tailwind CSS 4 and Radix UI components for a premium feel.
 - **📱 Mobile First**: Fully responsive design that works perfectly on smartphones for use directly at the restaurant or shop.
 
@@ -52,17 +52,20 @@ factureDelegate/
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone git@github.com:codingFer/split-receipt.git
    cd split-receipt
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Run the development server:
+
    ```bash
    npm run dev
    ```

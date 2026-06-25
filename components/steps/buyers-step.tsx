@@ -1,44 +1,74 @@
-"use client"
+'use client';
 
-import { useState, useRef, useEffect, useMemo } from 'react'
-import { useAppContext } from '@/lib/store'
-import { BUYER_COLORS } from '@/lib/types'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { FieldGroup, Field, FieldLabel } from '@/components/ui/field'
-import { Plus, Trash2, Edit2, Check, X, ArrowRight, Users, Sparkles, Settings2, Calendar, Clock, ArrowUpRight, FileUp, Download } from 'lucide-react'
-import { useTranslations, useLocale } from 'next-intl'
-import { motion, AnimatePresence } from 'framer-motion'
-import { BuyerAvatar } from '@/components/buyer-avatar'
-import { CrewHUD } from '@/components/crew-hud'
-import { formatCurrency } from '@/lib/currency'
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { useAppContext } from '@/lib/store';
+import { BUYER_COLORS } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { FieldGroup, Field, FieldLabel } from '@/components/ui/field';
+import {
+  Plus,
+  Trash2,
+  Edit2,
+  Check,
+  X,
+  ArrowRight,
+  Users,
+  Sparkles,
+  Settings2,
+  Calendar,
+  Clock,
+  ArrowUpRight,
+  FileUp,
+  Download,
+} from 'lucide-react';
+import { useTranslations, useLocale } from 'next-intl';
+import { motion, AnimatePresence } from 'framer-motion';
+import { BuyerAvatar } from '@/components/buyer-avatar';
+import { CrewHUD } from '@/components/crew-hud';
+import { formatCurrency } from '@/lib/currency';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from '@/components/ui/popover';
 
 export function BuyersStep() {
-  const t = useTranslations('BuyersStep')
-  const locale = useLocale()
-  
+  const t = useTranslations('BuyersStep');
+  const locale = useLocale();
+
   const getRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
     const diffInSeconds = Math.floor((Date.now() - date.getTime()) / 1000);
     const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
 
     if (diffInSeconds < 60) return rtf.format(-diffInSeconds, 'second');
-    if (diffInSeconds < 3600) return rtf.format(-Math.floor(diffInSeconds / 60), 'minute');
-    if (diffInSeconds < 86400) return rtf.format(-Math.floor(diffInSeconds / 3600), 'hour');
-    if (diffInSeconds < 2592000) return rtf.format(-Math.floor(diffInSeconds / 86400), 'day');
-    if (diffInSeconds < 31536000) return rtf.format(-Math.floor(diffInSeconds / 2592000), 'month');
+    if (diffInSeconds < 3600)
+      return rtf.format(-Math.floor(diffInSeconds / 60), 'minute');
+    if (diffInSeconds < 86400)
+      return rtf.format(-Math.floor(diffInSeconds / 3600), 'hour');
+    if (diffInSeconds < 2592000)
+      return rtf.format(-Math.floor(diffInSeconds / 86400), 'day');
+    if (diffInSeconds < 31536000)
+      return rtf.format(-Math.floor(diffInSeconds / 2592000), 'month');
     return rtf.format(-Math.floor(diffInSeconds / 31536000), 'year');
   };
 
   const getPendingInfo = (session: any) => {
-    if (!session.receipt || !session.receipt.items || session.receipt.items.length === 0) return null;
-    
+    if (
+      !session.receipt ||
+      !session.receipt.items ||
+      session.receipt.items.length === 0
+    )
+      return null;
+
     const buyerTotals: Record<string, number> = {};
     session.receipt.items.forEach((item: any) => {
       if (!item.assignments) return;
@@ -47,23 +77,39 @@ export function BuyersStep() {
       });
     });
 
-    const pendingBuyers = session.buyers.filter((b: any) => !b.hasPaid && (buyerTotals[b.id] || 0) > 0);
-    
-    const amount = pendingBuyers.reduce((sum: number, b: any) => sum + (buyerTotals[b.id] || 0), 0);
-    const totalAmount = session.buyers.reduce((sum: number, b: any) => sum + (buyerTotals[b.id] || 0), 0);
-    
+    const pendingBuyers = session.buyers.filter(
+      (b: any) => !b.hasPaid && (buyerTotals[b.id] || 0) > 0
+    );
+
+    const amount = pendingBuyers.reduce(
+      (sum: number, b: any) => sum + (buyerTotals[b.id] || 0),
+      0
+    );
+    const totalAmount = session.buyers.reduce(
+      (sum: number, b: any) => sum + (buyerTotals[b.id] || 0),
+      0
+    );
+
     if (totalAmount === 0) return null;
-    
+
     return { count: pendingBuyers.length, amount };
   };
 
-  const { 
-    buyers, 
-    addBuyer, 
-    updateBuyer, 
-    removeBuyer, 
-    setStep, 
-    calculateSummaries, 
+  const getRemainingDays = (debtsClearedAt: string) => {
+    const clearedTime = new Date(debtsClearedAt).getTime();
+    const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+    const remainingMs = (clearedTime + sevenDaysInMs) - Date.now();
+    const remainingDays = Math.ceil(remainingMs / (1000 * 60 * 60 * 24));
+    return Math.max(0, remainingDays);
+  };
+
+  const {
+    buyers,
+    addBuyer,
+    updateBuyer,
+    removeBuyer,
+    setStep,
+    calculateSummaries,
     reset,
     history,
     currentSessionId,
@@ -71,104 +117,106 @@ export function BuyersStep() {
     deleteSession,
     startNewSession,
     importState,
-    exportState
-  } = useAppContext()
-  const [newName, setNewName] = useState('')
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editingName, setEditingName] = useState('')
-  const [lastJoinedId, setLastJoinedId] = useState<string | null>(null)
-  const [dyingId, setDyingId] = useState<string | null>(null)
-  const [mounted, setMounted] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+    exportState,
+  } = useAppContext();
+  const [newName, setNewName] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
+  const [lastJoinedId, setLastJoinedId] = useState<string | null>(null);
+  const [dyingId, setDyingId] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
     reader.onload = (ev) => {
-      const content = ev.target?.result as string
-      importState(content)
-    }
-    reader.readAsText(file)
-  }
+      const content = ev.target?.result as string;
+      importState(content);
+    };
+    reader.readAsText(file);
+  };
 
   const handleDownload = (session: any) => {
-    const data = JSON.stringify(session, null, 2)
-    const blob = new Blob([data], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${session.name.replace(/\s+/g, '_')}_split.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
+    const data = JSON.stringify(session, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${session.name.replace(/\s+/g, '_')}_split.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   const handleAdd = () => {
-    if (!newName.trim()) return
-    const usedColors = new Set(buyers.map(b => b.color))
-    const availableColor = BUYER_COLORS.find(c => !usedColors.has(c)) || BUYER_COLORS[buyers.length % BUYER_COLORS.length]
-    const id = crypto.randomUUID()
-    addBuyer({ id, name: newName.trim(), color: availableColor })
-    setNewName('')
-    setLastJoinedId(id)
-    inputRef.current?.focus()
-    setTimeout(() => setLastJoinedId(null), 2000)
-  }
+    if (!newName.trim()) return;
+    const usedColors = new Set(buyers.map((b) => b.color));
+    const availableColor =
+      BUYER_COLORS.find((c) => !usedColors.has(c)) ||
+      BUYER_COLORS[buyers.length % BUYER_COLORS.length];
+    const id = crypto.randomUUID();
+    addBuyer({ id, name: newName.trim(), color: availableColor });
+    setNewName('');
+    setLastJoinedId(id);
+    inputRef.current?.focus();
+    setTimeout(() => setLastJoinedId(null), 2000);
+  };
 
   const handleEdit = (id: string, currentName: string) => {
-    setEditingId(id)
-    setEditingName(currentName)
-  }
+    setEditingId(id);
+    setEditingName(currentName);
+  };
 
   const handleSaveEdit = (id: string) => {
-    if (!editingName.trim()) return
-    updateBuyer(id, { name: editingName.trim() })
-    setEditingId(null)
-  }
+    if (!editingName.trim()) return;
+    updateBuyer(id, { name: editingName.trim() });
+    setEditingId(null);
+  };
 
   const handleRemove = (id: string) => {
-    setDyingId(id)
+    setDyingId(id);
     // Wait for the "kill" animation to play (red flash/shake)
     setTimeout(() => {
-      removeBuyer(id)
-      setDyingId(null)
-    }, 1200) // Slightly longer to let the animation feel impactful
-  }
+      removeBuyer(id);
+      setDyingId(null);
+    }, 1200); // Slightly longer to let the animation feel impactful
+  };
 
   const handleColorChange = (buyerId: string, color: string) => {
-    updateBuyer(buyerId, { color })
-  }
+    updateBuyer(buyerId, { color });
+  };
 
   const handleContinue = () => {
     if (newName.trim()) {
-      handleAdd()
+      handleAdd();
     }
-    
+
     if (currentSessionId) {
-      setStep('upload')
+      setStep('upload');
     } else {
-      startNewSession()
+      startNewSession();
     }
-  }
+  };
 
   // Memoize stars so they don't regenerate while typing
   const stars = useMemo(() => {
-    if (!mounted) return []
+    if (!mounted) return [];
     return [...Array(20)].map((_, i) => ({
       id: i,
       top: `${Math.random() * 100}%`,
       left: `${Math.random() * 100}%`,
       delay: `${Math.random() * 5}s`,
       opacity: Math.random() * 0.5 + 0.2,
-    }))
-  }, [mounted, buyers.length])
+    }));
+  }, [mounted, buyers.length]);
 
   return (
     <div className="max-w-2xl mx-auto flex flex-col gap-4 px-2 sm:px-0">
@@ -182,7 +230,6 @@ export function BuyersStep() {
           {t('lobbyDescription')}
         </p>
       </div>
-      
 
       {/* Integrated Lobby Area */}
       <div className="relative w-full aspect-[16/11] sm:aspect-[21/9] bg-slate-950 rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden border-4 border-slate-900 shadow-2xl overflow-x-auto ring-1 ring-white/5">
@@ -197,7 +244,7 @@ export function BuyersStep() {
                 top: star.top,
                 left: star.left,
                 animationDelay: star.delay,
-                opacity: star.opacity
+                opacity: star.opacity,
               }}
             />
           ))}
@@ -220,13 +267,20 @@ export function BuyersStep() {
         </AnimatePresence>
 
         {/* Player Count HUD (Top Right) */}
-        <CrewHUD variant="lobby" className="absolute top-4 sm:top-6 right-4 sm:right-6 z-20" />
+        <CrewHUD
+          variant="lobby"
+          className="absolute top-4 sm:top-6 right-4 sm:right-6 z-20"
+        />
 
         {/* Characters Container */}
         <motion.div
-          animate={dyingId ? {
-            x: [0, -4, 4, -4, 4, 0],
-          } : {}}
+          animate={
+            dyingId
+              ? {
+                  x: [0, -4, 4, -4, 4, 0],
+                }
+              : {}
+          }
           transition={{ duration: 0.4 }}
           className="relative h-full flex items-end justify-center pb-20 sm:pb-24 px-4 gap-2 sm:gap-8 min-w-max mx-auto overflow-visible"
         >
@@ -238,7 +292,7 @@ export function BuyersStep() {
                 initial={{ y: -200, opacity: 0, scale: 0.5 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
                 exit={{ y: 50, opacity: 0, scale: 0.5 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                 className="z-10 relative px-1 sm:px-0"
               >
                 {/* Kill Animation Overlay */}
@@ -284,56 +338,82 @@ export function BuyersStep() {
                   </motion.div>
                 )}
 
-                <Popover onOpenChange={(open) => {
-                  if (open) {
-                    setEditingId(buyer.id)
-                    setEditingName(buyer.name)
-                  } else {
-                    setEditingId(null)
-                  }
-                }}>
+                <Popover
+                  onOpenChange={(open) => {
+                    if (open) {
+                      setEditingId(buyer.id);
+                      setEditingName(buyer.name);
+                    } else {
+                      setEditingId(null);
+                    }
+                  }}
+                >
                   <PopoverTrigger asChild>
                     <button className="transition-transform active:scale-95 group relative touch-manipulation focus:outline-none">
                       <div className="absolute -top-2 -right-1 sm:-right-2 opacity-0 sm:group-hover:opacity-100 transition-opacity bg-primary rounded-full p-1 shadow-lg ring-2 ring-background z-20">
                         <Settings2 className="w-2.5 h-2.5 sm:w-3 h-3 text-white" />
                       </div>
                       <div className="hidden sm:block">
-                        <BuyerAvatar buyer={buyer} size="lg" isDead={dyingId === buyer.id} />
+                        <BuyerAvatar
+                          buyer={buyer}
+                          size="lg"
+                          isDead={dyingId === buyer.id}
+                        />
                       </div>
                       <div className="sm:hidden">
-                        <BuyerAvatar buyer={buyer} size="md" isDead={dyingId === buyer.id} />
+                        <BuyerAvatar
+                          buyer={buyer}
+                          size="md"
+                          isDead={dyingId === buyer.id}
+                        />
                       </div>
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-64 p-4 rounded-2xl shadow-2xl border-2 border-slate-100 dark:border-slate-800" sideOffset={12}>
+                  <PopoverContent
+                    className="w-64 p-4 rounded-2xl shadow-2xl border-2 border-slate-100 dark:border-slate-800"
+                    sideOffset={12}
+                  >
                     <div className="space-y-4">
                       <div className="space-y-3">
                         <div className="space-y-1.5">
-                          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">{t('nameLabel')}</label>
+                          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
+                            {t('nameLabel')}
+                          </label>
                           <div className="flex gap-1.5">
                             <Input
                               value={editingName}
                               onChange={(e) => setEditingName(e.target.value)}
-                              onKeyDown={(e) => e.key === 'Enter' && handleSaveEdit(buyer.id)}
+                              onKeyDown={(e) =>
+                                e.key === 'Enter' && handleSaveEdit(buyer.id)
+                              }
                               className="h-9 font-medium rounded-xl"
                             />
-                            <Button size="icon" className="h-9 w-9 rounded-xl shrink-0" onClick={() => handleSaveEdit(buyer.id)}>
+                            <Button
+                              size="icon"
+                              className="h-9 w-9 rounded-xl shrink-0"
+                              onClick={() => handleSaveEdit(buyer.id)}
+                            >
                               <Check className="w-4 h-4" />
                             </Button>
                           </div>
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">{t('colorLabel')}</label>
+                          <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
+                            {t('colorLabel')}
+                          </label>
                           <div className="flex flex-wrap gap-2">
                             {BUYER_COLORS.map((color) => (
                               <button
                                 key={color}
-                                onClick={() => handleColorChange(buyer.id, color)}
-                                className={`w-7 h-7 rounded-full transition-all duration-300 ring-offset-2 ${buyer.color === color
-                                  ? 'ring-2 ring-primary scale-110 shadow-md'
-                                  : 'hover:scale-110 opacity-70 hover:opacity-100'
-                                  }`}
+                                onClick={() =>
+                                  handleColorChange(buyer.id, color)
+                                }
+                                className={`w-7 h-7 rounded-full transition-all duration-300 ring-offset-2 ${
+                                  buyer.color === color
+                                    ? 'ring-2 ring-primary scale-110 shadow-md'
+                                    : 'hover:scale-110 opacity-70 hover:opacity-100'
+                                }`}
                                 style={{ backgroundColor: color }}
                               />
                             ))}
@@ -414,112 +494,168 @@ export function BuyersStep() {
             exit={{ opacity: 0, height: 0 }}
             className="overflow-hidden mt-8"
           >
-               <div className="flex items-center justify-between px-2 mb-3 pt-6 border-t border-border/50">
-                 <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                   <Clock className="w-4 h-4" />
-                   {t('history')}
-                 </h3>
-                 <Button
-                   variant="outline"
-                   size="sm"
-                   onClick={() => fileInputRef.current?.click()}
-                   className="text-[10px] font-bold uppercase tracking-wider h-7 px-3 rounded-lg border-primary/20 hover:bg-primary/5 text-primary"
-                 >
-                   <FileUp className="w-3 h-3 mr-1.5" />
-                   {t('importData')}
-                 </Button>
-                 <input
-                   type="file"
-                   ref={fileInputRef}
-                   className="hidden"
-                   accept=".json"
-                   onChange={handleImport}
-                 />
-               </div>
-               <div className="flex flex-col gap-2 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar pb-10">
-                 {[...history].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).map((session) => (
-                   <div 
-                     key={session.id} 
-                     className={`group flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-[1.5rem] transition-all border shadow-sm gap-3 ${
-                       currentSessionId === session.id 
-                         ? 'bg-primary/5 border-primary/30 ring-1 ring-primary/20' 
-                         : 'bg-muted/40 border-border/50 hover:bg-muted/60 hover:border-primary/30'
-                     }`}
-                   >
-                      <div className="flex flex-col gap-1 min-w-0">
-                        <div className="font-bold text-sm sm:text-base flex flex-wrap items-center gap-1.5 sm:gap-2">
-                          <span className="truncate max-w-[180px] sm:max-w-none">{session.name}</span>
-                          {currentSessionId === session.id && (
-                            <span className="flex items-center gap-1 text-[9px] sm:text-[10px] bg-primary text-white px-2 py-0.5 rounded-full uppercase tracking-tighter animate-pulse shrink-0">
-                              <Sparkles className="w-2.5 h-2.5" />
-                              Activo
-                            </span>
-                          )}
-                          <span className="text-[9px] sm:text-[10px] bg-muted-foreground/10 text-muted-foreground px-2 py-0.5 rounded-full uppercase tracking-tighter font-bold shrink-0">
-                            {session.step}
+            <div className="flex items-center justify-between px-2 mb-3 pt-6 border-t border-border/50">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                {t('history')}
+              </h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                className="text-[10px] font-bold uppercase tracking-wider h-7 px-3 rounded-lg border-primary/20 hover:bg-primary/5 text-primary"
+              >
+                <FileUp className="w-3 h-3 mr-1.5" />
+                {t('importData')}
+              </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept=".json"
+                onChange={handleImport}
+              />
+            </div>
+            
+            {/* Auto-cleanup Task Alert */}
+            <div className="mx-2 mb-4 bg-primary/5 border border-primary/20 rounded-2xl p-4 flex gap-3 items-start shadow-sm">
+              <div className="p-2 bg-primary/10 rounded-xl text-primary shrink-0">
+                <Clock className="w-5 h-5 animate-pulse" />
+              </div>
+              <div className="flex-1 space-y-1">
+                <h4 className="text-sm font-bold text-foreground">
+                  {t('cleanupTaskTitle')}
+                </h4>
+                <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+                  {t('cleanupTaskNotice')}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar pb-10">
+              {[...history]
+                .sort(
+                  (a, b) =>
+                    new Date(b.updatedAt).getTime() -
+                    new Date(a.updatedAt).getTime()
+                )
+                .map((session) => (
+                  <div
+                    key={session.id}
+                    className={`group flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-[1.5rem] transition-all border shadow-sm gap-3 ${
+                      currentSessionId === session.id
+                        ? 'bg-primary/5 border-primary/30 ring-1 ring-primary/20'
+                        : 'bg-muted/40 border-border/50 hover:bg-muted/60 hover:border-primary/30'
+                    }`}
+                  >
+                    <div className="flex flex-col gap-1 min-w-0">
+                      <div className="font-bold text-sm sm:text-base flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <span className="truncate max-w-[180px] sm:max-w-none">
+                          {session.name}
+                        </span>
+                        {currentSessionId === session.id && (
+                          <span className="flex items-center gap-1 text-[9px] sm:text-[10px] bg-primary text-white px-2 py-0.5 rounded-full uppercase tracking-tighter animate-pulse shrink-0">
+                            <Sparkles className="w-2.5 h-2.5" />
+                            Activo
+                          </span>
+                        )}
+                        <span className="text-[9px] sm:text-[10px] bg-muted-foreground/10 text-muted-foreground px-2 py-0.5 rounded-full uppercase tracking-tighter font-bold shrink-0">
+                          {session.step}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-tight">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          <span className="text-muted-foreground">
+                            {t('createdAtLabel')}:
+                          </span>
+                          <span className="text-foreground">
+                            {new Date(session.createdAt).toLocaleDateString()}
                           </span>
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[9px] sm:text-[10px] text-muted-foreground font-medium uppercase tracking-tight">
-                           <div className="flex items-center gap-1">
-                             <Calendar className="w-3 h-3" />
-                             <span className="text-muted-foreground">{t('createdAtLabel')}:</span>
-                             <span className="text-foreground">{new Date(session.createdAt).toLocaleDateString()}</span>
-                           </div>
-                           <div className="flex items-center gap-1">
-                             <Clock className="w-3 h-3" />
-                             <span className="text-muted-foreground">{t('updatedAtLabel')}:</span>
-                             <span className="text-foreground">{getRelativeTime(session.updatedAt)}</span>
-                           </div>
-                           {(() => {
-                             const pending = getPendingInfo(session);
-                             if (!pending) return null;
-                             return (
-                               <div className={`flex items-center gap-1 ${pending.count > 0 ? 'text-amber-500' : 'text-emerald-500'}`}>
-                                 <span className="font-bold">
-                                   {pending.count > 0 
-                                     ? t('pendingPayments', { count: pending.count, amount: formatCurrency(pending.amount) })
-                                     : t('allPaid')}
-                                 </span>
-                               </div>
-                             );
-                           })()}
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          <span className="text-muted-foreground">
+                            {t('updatedAtLabel')}:
+                          </span>
+                          <span className="text-foreground">
+                            {getRelativeTime(session.updatedAt)}
+                          </span>
                         </div>
+                        {(() => {
+                          const pending = getPendingInfo(session);
+                          if (!pending) return null;
+                          return (
+                            <div className="flex flex-col gap-0.5">
+                              <div
+                                className={`flex items-center gap-1 ${pending.count > 0 ? 'text-amber-500' : 'text-emerald-500'}`}
+                              >
+                                <span className="font-bold">
+                                  {pending.count > 0
+                                    ? t('pendingPayments', {
+                                        count: pending.count,
+                                        amount: formatCurrency(pending.amount),
+                                      })
+                                    : t('allPaid')}
+                                </span>
+                              </div>
+                              {session.debtsClearedAt && (
+                                <div className="text-[9px] text-muted-foreground/80 font-medium flex items-center gap-1">
+                                  <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                                  <span>
+                                    {(() => {
+                                      const remainingDays = getRemainingDays(session.debtsClearedAt);
+                                      if (remainingDays === 1) {
+                                        return t('autoDeleteCountdownOneDay');
+                                      } else if (remainingDays === 0) {
+                                        return t('autoDeleteSoon');
+                                      } else {
+                                        return t('autoDeleteCountdown', { days: remainingDays });
+                                      }
+                                    })()}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
-                      <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity justify-end border-t sm:border-t-0 pt-2 sm:pt-0 mt-1 sm:mt-0">
-                         {currentSessionId !== session.id && (
-                           <Button
-                             variant="ghost"
-                             size="sm"
-                             onClick={() => resumeSession(session.id)}
-                             className="text-[10px] sm:text-xs font-bold text-primary hover:bg-primary/10 rounded-xl px-3 h-8 sm:h-9"
-                           >
-                             {t('resume')}
-                             <ArrowUpRight className="ml-1.5 w-3.5 h-3.5" />
-                           </Button>
-                         )}
-                         <Button
-                           variant="ghost"
-                           size="icon"
-                           onClick={() => handleDownload(session)}
-                           className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-primary rounded-xl"
-                         >
-                           <Download className="w-4 h-4" />
-                         </Button>
-                         <Button
-                           variant="ghost"
-                           size="icon"
-                           onClick={() => deleteSession(session.id)}
-                           className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-destructive rounded-xl"
-                         >
-                           <Trash2 className="w-4 h-4" />
-                         </Button>
-                      </div>
-                   </div>
-                 ))}
-               </div>
+                    </div>
+                    <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity justify-end border-t sm:border-t-0 pt-2 sm:pt-0 mt-1 sm:mt-0">
+                      {currentSessionId !== session.id && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => resumeSession(session.id)}
+                          className="text-[10px] sm:text-xs font-bold text-primary hover:bg-primary/10 rounded-xl px-3 h-8 sm:h-9"
+                        >
+                          {t('resume')}
+                          <ArrowUpRight className="ml-1.5 w-3.5 h-3.5" />
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDownload(session)}
+                        className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-primary rounded-xl"
+                      >
+                        <Download className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteSession(session.id)}
+                        className="h-8 w-8 sm:h-9 sm:w-9 text-muted-foreground hover:text-destructive rounded-xl"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
-  )
+  );
 }

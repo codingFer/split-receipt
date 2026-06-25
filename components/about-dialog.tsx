@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import {
   Dialog,
@@ -8,13 +8,21 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Info, Github, Cpu, FileJson, Globe, Palette, InfoIcon } from "lucide-react"
-import { useTranslations } from "next-intl"
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import {
+  Info,
+  Github,
+  Cpu,
+  FileJson,
+  Globe,
+  Palette,
+  InfoIcon,
+} from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export function AboutDialog() {
-  const t = useTranslations('About')
+  const t = useTranslations('About');
 
   return (
     <Dialog>
@@ -30,9 +38,7 @@ export function AboutDialog() {
             <Info className="h-5 w-5 text-primary" />
             {t('title')}
           </DialogTitle>
-          <DialogDescription>
-            {t('description')}
-          </DialogDescription>
+          <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50 border">
@@ -44,7 +50,7 @@ export function AboutDialog() {
               <p className="text-sm text-muted-foreground mt-1">v0.1.0-alpha</p>
             </div>
           </div>
-          
+
           <div className="space-y-3">
             <h4 className="text-sm font-medium border-b pb-1">Features</h4>
             <div className="grid grid-cols-1 gap-2">
@@ -64,17 +70,21 @@ export function AboutDialog() {
           </div>
 
           <div className="pt-2 text-center">
-            <p className="text-xs text-muted-foreground">
-              {t('builtBy')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('builtBy')}</p>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="secondary" className="w-full sm:w-auto" onClick={() => (document.querySelector('[data-state="open"]') as any)?.click()}>
+          <Button
+            variant="secondary"
+            className="w-full sm:w-auto"
+            onClick={() =>
+              (document.querySelector('[data-state="open"]') as any)?.click()
+            }
+          >
             {t('close')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

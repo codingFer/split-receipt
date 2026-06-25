@@ -38,7 +38,12 @@
     "noHistory": "No pending jobs found",
     "importData": "Load Data",
     "pendingPayments": "{count} pending ({amount})",
-    "allPaid": "All paid"
+    "allPaid": "All paid",
+    "cleanupTaskTitle": "Auto-Cleanup Task",
+    "cleanupTaskNotice": "Receipts with no pending debts will be automatically deleted after 7 days to keep your space clean.",
+    "autoDeleteCountdown": "Auto-delete in {days} days",
+    "autoDeleteCountdownOneDay": "Auto-delete in 1 day",
+    "autoDeleteSoon": "Auto-delete today"
   },
   "UploadStep": {
     "title": "Upload Receipt",

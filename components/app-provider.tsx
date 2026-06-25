@@ -1,11 +1,36 @@
 "use client"
 
 import { useState, useCallback, useMemo, useEffect, type ReactNode } from 'react'
-import { AppContext, type AppState } from '@/lib/store'
+import { AppContext, type AppState, type SplitSession } from '@/lib/store'
 import type { Buyer, Receipt, ReceiptItem, AppStep, BuyerSummary, ItemAssignment } from '@/lib/types'
 
 function generateId() {
   return Math.random().toString(36).substring(2, 9)
+}
+
+function isSessionFullyPaid(session: { receipt: Receipt | null; buyers: Buyer[] }): boolean {
+  if (!session.receipt || !session.receipt.items || session.receipt.items.length === 0) {
+    return false
+  }
+
+  const buyerTotals: Record<string, number> = {}
+  session.receipt.items.forEach(item => {
+    if (!item.assignments) return
+    item.assignments.forEach(a => {
+      buyerTotals[a.buyerId] = (buyerTotals[a.buyerId] || 0) + a.amount
+    })
+  })
+
+  const pendingBuyers = session.buyers.filter(
+    b => !b.hasPaid && (buyerTotals[b.id] || 0) > 0
+  )
+
+  const totalAmount = session.buyers.reduce(
+    (sum, b) => sum + (buyerTotals[b.id] || 0),
+    0
+  )
+
+  return totalAmount > 0 && pendingBuyers.length === 0
 }
 
 const STORAGE_KEY = 'split-receipt-state'
@@ -23,16 +48,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>(initialState)
   const [isHydrated, setIsHydrated] = useState(false)
 
-  // Load state from localStorage on mount
+  // Load state from localStorage on mount and clear expired sessions
   useEffect(() => {
     const savedState = localStorage.getItem(STORAGE_KEY)
     if (savedState) {
       try {
         const parsed = JSON.parse(savedState)
+        const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+        const filteredHistory = (parsed.history || [])
+          .map((session: any) => {
+            if (isSessionFullyPaid(session)) {
+              if (!session.debtsClearedAt) {
+                return { ...session, debtsClearedAt: new Date().toISOString() }
+              }
+            } else if (session.debtsClearedAt) {
+              return { ...session, debtsClearedAt: undefined }
+            }
+            return session
+          })
+          .filter((session: any) => {
+            if (session.debtsClearedAt) {
+              const clearedTime = new Date(session.debtsClearedAt).getTime()
+              return clearedTime > sevenDaysAgo
+            }
+            return true
+          })
+
         // Only restore history, reset active session to clean slate
         setState({ 
           ...initialState, 
-          history: parsed.history || [], 
+          history: filteredHistory, 
           isProcessing: false 
         })
       } catch (e) {
@@ -63,13 +108,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
           currentSession.step !== state.currentStep ||
           currentSession.name !== newName
         ) {
+          const isPaid = isSessionFullyPaid({
+            receipt: state.currentReceipt,
+            buyers: state.buyers
+          })
+
+          let debtsClearedAt = currentSession.debtsClearedAt
+          if (isPaid) {
+            if (!debtsClearedAt) {
+              debtsClearedAt = new Date().toISOString()
+            }
+          } else {
+            debtsClearedAt = undefined
+          }
+
           const updatedSession = {
             ...currentSession,
             buyers: state.buyers,
             receipt: state.currentReceipt,
             step: state.currentStep,
             updatedAt: new Date().toISOString(),
-            name: newName
+            name: newName,
+            debtsClearedAt
           }
 
           setState(prev => {
@@ -337,6 +397,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const session = JSON.parse(encoded)
       if (session.id && Array.isArray(session.buyers)) {
+        const isPaid = isSessionFullyPaid(session)
+        if (isPaid && !session.debtsClearedAt) {
+          session.debtsClearedAt = new Date().toISOString()
+        } else if (!isPaid && session.debtsClearedAt) {
+          delete session.debtsClearedAt
+        }
+
         setState(prev => ({
           ...prev,
           history: [session, ...prev.history.filter(s => s.id !== session.id)]

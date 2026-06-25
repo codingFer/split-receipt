@@ -38,7 +38,12 @@
     "noHistory": "No se encontraron trabajos pendientes",
     "importData": "Cargar Datos",
     "pendingPayments": "{count} pendientes ({amount})",
-    "allPaid": "Todo pagado"
+    "allPaid": "Todo pagado",
+    "cleanupTaskTitle": "Tarea de Limpieza Automática",
+    "cleanupTaskNotice": "Las facturas sin deudas pendientes se eliminarán automáticamente después de 7 días para mantener tu espacio limpio.",
+    "autoDeleteCountdown": "Auto-eliminación en {days} días",
+    "autoDeleteCountdownOneDay": "Auto-eliminación en 1 día",
+    "autoDeleteSoon": "Auto-eliminación hoy"
   },
   "UploadStep": {
     "title": "Subir Factura",

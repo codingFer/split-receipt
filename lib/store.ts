@@ -11,6 +11,7 @@ export interface SplitSession {
   buyers: Buyer[]
   receipt: Receipt | null
   step: AppStep
+  debtsClearedAt?: string
 }
 
 export interface AppState {
